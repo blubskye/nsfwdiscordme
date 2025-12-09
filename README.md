@@ -10,6 +10,8 @@
 
 A Discord server directory and listing platform built with Symfony. Allows server owners to list, manage, and promote their Discord communities.
 
+**Part of a two-project ecosystem** - Premium tier purchases are handled by the companion [stripewebsite](https://github.com/blubskye/stripewebsite) payment gateway. Both projects share the same MariaDB server.
+
 [Features](#features) • [Requirements](#requirements) • [Installation](#installation) • [Documentation](#documentation) • [License](#license)
 
 </div>
@@ -155,6 +157,14 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 This project is licensed under the **GNU Affero General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
 
 [![AGPL v3](https://www.gnu.org/graphics/agplv3-with-text-162x68.png)](https://www.gnu.org/licenses/agpl-3.0)
+
+## Related Projects
+
+| Project | Description |
+|---------|-------------|
+| [stripewebsite](https://github.com/blubskye/stripewebsite) | Stripe payment gateway for handling premium tier purchases |
+
+Both projects are designed to run together on the same server, sharing the same MariaDB instance with separate databases.
 
 ## Links
 
