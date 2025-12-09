@@ -106,9 +106,9 @@ class Purchase implements LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -154,9 +154,9 @@ class Purchase implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getPurchaseToken(): string
+    public function getPurchaseToken(): ?string
     {
         return $this->purchaseToken;
     }

@@ -145,9 +145,9 @@ class User implements UserInterface, LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -193,9 +193,9 @@ class User implements UserInterface, LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getDiscordID(): int
+    public function getDiscordID(): ?int
     {
         return $this->discordID;
     }
@@ -213,9 +213,9 @@ class User implements UserInterface, LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordUsername(): string
+    public function getDiscordUsername(): ?string
     {
         return $this->discordUsername;
     }
@@ -233,9 +233,9 @@ class User implements UserInterface, LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordEmail(): string
+    public function getDiscordEmail(): ?string
     {
         return $this->discordEmail;
     }
@@ -253,9 +253,9 @@ class User implements UserInterface, LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordAvatar(): string
+    public function getDiscordAvatar(): ?string
     {
         return $this->discordAvatar;
     }
@@ -281,9 +281,9 @@ class User implements UserInterface, LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordDiscriminator(): string
+    public function getDiscordDiscriminator(): ?string
     {
         return $this->discordDiscriminator;
     }
@@ -479,7 +479,7 @@ class User implements UserInterface, LoggableEntityInterface
      */
     public function getUsername(): string
     {
-        return $this->getDiscordUsername();
+        return $this->getDiscordUsername() ?? '';
     }
 
     /**

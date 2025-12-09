@@ -19,12 +19,18 @@ class DiscordService
 {
     use LoggerAwareTrait;
 
-    const API_BASE_URL = 'https://discordapp.com/api/v6';
+    const API_BASE_URL = 'https://discord.com/api/v10';
     const CDN_BASE_URL = 'https://cdn.discordapp.com';
     const USER_AGENT   = 'nsfwdiscord.me (https://nsfwdiscord.me/, 1)';
-    const TIMEOUT      = 2.0;
+    const TIMEOUT      = 5.0;
     const RETRY_LIMIT  = 3;
     const CACHE_TIME   = 10;
+
+    /**
+     * Tracks rate limit reset times per bucket
+     * @var array<string, float>
+     */
+    protected $rateLimitBuckets = [];
 
     /**
      * @var string
@@ -181,7 +187,7 @@ class DiscordService
             throw new Exception('Unable to generate invite.');
         }
 
-        return "https://discordapp.com/invite/${invite['code']}";
+        return "https://discord.gg/${invite['code']}";
     }
 
     /**
@@ -235,7 +241,7 @@ class DiscordService
      *
      * Throws an InvalidArgumentException when the given username is not valid.
      *
-     * @see https://discordapp.com/developers/docs/resources/user#usernames-and-nicknames
+     * @see https://discord.com/developers/docs/resources/user#usernames-and-nicknames
      *
      * @param string $username
      *
@@ -292,6 +298,9 @@ class DiscordService
         $client  = new Guzzle();
 
         while(true) {
+            // Check if we need to wait for a rate limit reset before making the request
+            $this->waitForRateLimit($path);
+
             $this->logger->debug(
                 sprintf('Discord: %s %s', $method, $url),
                 $options
@@ -301,17 +310,27 @@ class DiscordService
             $statusCode = $response->getStatusCode();
             $data       = json_decode((string)$response->getBody(), true);
 
+            // Process rate limit headers from the response
+            $this->processRateLimitHeaders($response, $path);
+
             if (!is_array($data)) {
                 throw new DiscordException('Discord: Received invalid response.');
             }
-            if ($statusCode === 429 && isset($data['retry_after'])) {
+
+            if ($statusCode === 429) {
                 if (++$tries > self::RETRY_LIMIT) {
                     throw new DiscordRateLimitException();
                 }
+
+                // Get retry time from response body or headers
+                $retryAfterSeconds = $this->getRetryAfter($response, $data);
+
                 $this->logger->debug(
-                    sprintf('Discord: Rate limited. Sleeping for %d.', $data['retry_after'])
+                    sprintf('Discord: Rate limited. Sleeping for %.2f seconds.', $retryAfterSeconds)
                 );
-                usleep($data['retry_after'] * 1000);
+
+                // Convert seconds to microseconds for usleep
+                usleep((int)($retryAfterSeconds * 1000000));
                 continue;
             } else if ($statusCode !== 200) {
                 $this->logger->debug(
@@ -364,5 +383,103 @@ class DiscordService
         }
 
         return $options;
+    }
+
+    /**
+     * Wait for rate limit to reset if we're currently limited on this endpoint
+     *
+     * @param string $path The API endpoint path
+     */
+    protected function waitForRateLimit(string $path): void
+    {
+        $bucket = $this->getBucketKey($path);
+
+        if (isset($this->rateLimitBuckets[$bucket])) {
+            $resetTime = $this->rateLimitBuckets[$bucket];
+            $now = microtime(true);
+
+            if ($resetTime > $now) {
+                $waitTime = $resetTime - $now;
+                $this->logger->debug(
+                    sprintf('Discord: Proactively waiting %.2f seconds for rate limit reset on %s', $waitTime, $bucket)
+                );
+                usleep((int)($waitTime * 1000000));
+            }
+        }
+    }
+
+    /**
+     * Process rate limit headers from Discord's response
+     *
+     * Discord sends these headers:
+     * - X-RateLimit-Limit: Number of requests allowed per window
+     * - X-RateLimit-Remaining: Number of requests remaining in current window
+     * - X-RateLimit-Reset: Unix timestamp when the rate limit resets
+     * - X-RateLimit-Reset-After: Seconds until the rate limit resets
+     * - X-RateLimit-Bucket: Unique identifier for this rate limit bucket
+     *
+     * @param \Psr\Http\Message\ResponseInterface $response
+     * @param string $path
+     */
+    protected function processRateLimitHeaders($response, string $path): void
+    {
+        $remaining = $response->getHeaderLine('X-RateLimit-Remaining');
+        $resetAfter = $response->getHeaderLine('X-RateLimit-Reset-After');
+        $bucket = $response->getHeaderLine('X-RateLimit-Bucket') ?: $this->getBucketKey($path);
+
+        // If we have 0 remaining requests, store when we can make requests again
+        if ($remaining !== '' && (int)$remaining === 0 && $resetAfter !== '') {
+            $this->rateLimitBuckets[$bucket] = microtime(true) + (float)$resetAfter;
+            $this->logger->debug(
+                sprintf('Discord: Rate limit exhausted on bucket %s, reset in %.2f seconds', $bucket, (float)$resetAfter)
+            );
+        } elseif ($remaining !== '' && (int)$remaining > 0) {
+            // Clear any stored rate limit for this bucket
+            unset($this->rateLimitBuckets[$bucket]);
+        }
+    }
+
+    /**
+     * Get retry time from 429 response (body or headers)
+     *
+     * @param \Psr\Http\Message\ResponseInterface $response
+     * @param array $data Response body data
+     * @return float Seconds to wait
+     */
+    protected function getRetryAfter($response, array $data): float
+    {
+        // First check response body (most accurate for 429s)
+        if (isset($data['retry_after'])) {
+            return (float)$data['retry_after'];
+        }
+
+        // Fall back to Retry-After header
+        $retryAfterHeader = $response->getHeaderLine('Retry-After');
+        if ($retryAfterHeader !== '') {
+            return (float)$retryAfterHeader;
+        }
+
+        // Fall back to X-RateLimit-Reset-After header
+        $resetAfter = $response->getHeaderLine('X-RateLimit-Reset-After');
+        if ($resetAfter !== '') {
+            return (float)$resetAfter;
+        }
+
+        // Default fallback: 1 second
+        return 1.0;
+    }
+
+    /**
+     * Generate a bucket key for a given API path
+     * Groups similar endpoints together for rate limiting
+     *
+     * @param string $path
+     * @return string
+     */
+    protected function getBucketKey(string $path): string
+    {
+        // Replace snowflake IDs with placeholder to group similar endpoints
+        // e.g., "guilds/123456789/widget.json" -> "guilds/:id/widget.json"
+        return preg_replace('/\/\d{17,}/', '/:id', $path);
     }
 }

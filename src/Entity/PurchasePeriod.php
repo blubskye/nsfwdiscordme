@@ -64,9 +64,9 @@ class PurchasePeriod
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -132,9 +132,9 @@ class PurchasePeriod
     }
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
-    public function getDateBegins(): DateTime
+    public function getDateBegins(): ?DateTime
     {
         return $this->dateBegins;
     }
@@ -152,9 +152,9 @@ class PurchasePeriod
     }
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
-    public function getDateExpires(): DateTime
+    public function getDateExpires(): ?DateTime
     {
         return $this->dateExpires;
     }

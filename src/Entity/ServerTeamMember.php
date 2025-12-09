@@ -106,7 +106,7 @@ class ServerTeamMember implements LoggableEntityInterface
      */
     public function __toString(): string
     {
-        return $this->getDiscordID() ?? '';
+        return (string)($this->getDiscordID() ?? '');
     }
 
     /**
@@ -123,9 +123,9 @@ class ServerTeamMember implements LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -191,9 +191,9 @@ class ServerTeamMember implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordUsername(): string
+    public function getDiscordUsername(): ?string
     {
         return $this->discordUsername;
     }
@@ -211,9 +211,9 @@ class ServerTeamMember implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordDiscriminator(): string
+    public function getDiscordDiscriminator(): ?string
     {
         return $this->discordDiscriminator;
     }
@@ -231,9 +231,9 @@ class ServerTeamMember implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordAvatar(): string
+    public function getDiscordAvatar(): ?string
     {
         return $this->discordAvatar;
     }

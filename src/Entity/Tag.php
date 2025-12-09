@@ -53,9 +53,9 @@ class Tag implements LoggableEntityInterface
     /**
      * @return string
      */
-    public function __toString(): ?string
+    public function __toString(): string
     {
-        return $this->getName();
+        return $this->getName() ?? '';
     }
 
     /**
@@ -75,7 +75,7 @@ class Tag implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getName(): ?string
     {

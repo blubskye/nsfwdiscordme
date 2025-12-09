@@ -72,17 +72,17 @@ class BannedUser implements LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordUsername(): string
+    public function getDiscordUsername(): ?string
     {
         return $this->discordUsername;
     }
@@ -100,9 +100,9 @@ class BannedUser implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDiscordDiscriminator(): string
+    public function getDiscordDiscriminator(): ?string
     {
         return $this->discordDiscriminator;
     }
@@ -120,9 +120,9 @@ class BannedUser implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getReason(): string
+    public function getReason(): ?string
     {
         return $this->reason;
     }

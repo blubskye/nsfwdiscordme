@@ -61,7 +61,7 @@ class BannedServer implements LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getId(): ?int
     {
@@ -69,7 +69,7 @@ class BannedServer implements LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getDiscordID(): ?int
     {
@@ -89,7 +89,7 @@ class BannedServer implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getReason(): ?string
     {

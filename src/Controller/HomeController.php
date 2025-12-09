@@ -206,4 +206,16 @@ class HomeController extends Controller
             'Terms of Use'
         ]);
     }
+
+    /**
+     * @Route("/source", name="source")
+     *
+     * @return Response
+     */
+    public function sourceAction()
+    {
+        return $this->render('home/source.html.twig', [
+            'title' => 'Source Code'
+        ]);
+    }
 }

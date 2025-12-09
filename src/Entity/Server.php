@@ -288,7 +288,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getDiscordID(): ?int
     {
@@ -328,7 +328,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getSlug(): ?string
     {
@@ -348,7 +348,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getName(): ?string
     {
@@ -368,7 +368,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getIconHash(): ?string
     {
@@ -388,7 +388,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getBannerHash(): ?string
     {
@@ -408,7 +408,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return Media
+     * @return Media|null
      */
     public function getIconMedia(): ?Media
     {
@@ -428,7 +428,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return Media
+     * @return Media|null
      */
     public function getBannerMedia(): ?Media
     {
@@ -448,7 +448,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getVanityURL(): ?string
     {
@@ -468,7 +468,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getSummary(): ?string
     {
@@ -488,7 +488,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getDescription(): ?string
     {
@@ -644,7 +644,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getInviteType(): ?string
     {
@@ -669,7 +669,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getBotInviteChannelID(): ?int
     {
@@ -709,7 +709,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getServerPassword(): ?string
     {
@@ -809,7 +809,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
     public function getDateBumped(): ?DateTime
     {
@@ -869,7 +869,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return Category
+     * @return Category|null
      */
     public function getCategory1(): ?Category
     {
@@ -896,7 +896,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return Category
+     * @return Category|null
      */
     public function getCategory2(): ?Category
     {
@@ -943,7 +943,7 @@ class Server implements LoggableEntityInterface
     }
 
     /**
-     * @return ServerEvent
+     * @return ServerEvent|null
      */
     public function getLastBumpEvent(): ?ServerEvent
     {

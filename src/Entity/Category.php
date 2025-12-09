@@ -61,7 +61,7 @@ class Category implements LoggableEntityInterface
      */
     public function __toString()
     {
-        return $this->getName();
+        return $this->getName() ?? '';
     }
 
     /**
@@ -81,7 +81,7 @@ class Category implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getName(): ?string
     {
@@ -101,7 +101,7 @@ class Category implements LoggableEntityInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getSlug(): ?string
     {
