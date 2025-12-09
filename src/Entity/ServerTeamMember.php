@@ -9,6 +9,8 @@ use InvalidArgumentException;
 
 #[ORM\Table(name: 'server_team_member')]
 #[ORM\UniqueConstraint(columns: ['server_id', 'discord_username', 'discord_discriminator'])]
+#[ORM\Index(name: 'server_id_idx', columns: ['server_id'])]
+#[ORM\Index(name: 'user_id_idx', columns: ['user_id'])]
 #[ORM\Entity(repositoryClass: 'App\Repository\ServerTeamMemberRepository')]
 class ServerTeamMember implements LoggableEntityInterface
 {

@@ -9,6 +9,8 @@ use InvalidArgumentException;
 
 #[ORM\Table(name: 'purchase')]
 #[ORM\Index(columns: ['purchase_token'])]
+#[ORM\Index(name: 'user_id_idx', columns: ['user_id'])]
+#[ORM\Index(name: 'server_id_idx', columns: ['server_id'])]
 #[ORM\Entity(repositoryClass: 'App\Repository\PurchaseRepository')]
 class Purchase implements LoggableEntityInterface
 {

@@ -11,6 +11,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Table(name: 'user')]
+#[ORM\Index(name: 'discord_id_idx', columns: ['discord_id'])]
+#[ORM\Index(name: 'discord_email_idx', columns: ['discord_email'])]
+#[ORM\Index(name: 'discord_username_discriminator_idx', columns: ['discord_username', 'discord_discriminator'])]
 #[ORM\Entity(repositoryClass: 'App\Repository\UserRepository')]
 class User implements UserInterface, LoggableEntityInterface
 {

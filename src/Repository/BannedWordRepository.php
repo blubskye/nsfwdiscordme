@@ -31,21 +31,41 @@ class BannedWordRepository extends ServiceEntityRepository
     }
 
     /**
+     * Get all banned words (cached in memory for the request)
+     *
+     * @return string[]
+     */
+    private ?array $cachedBannedWords = null;
+
+    private function getBannedWords(): array
+    {
+        if ($this->cachedBannedWords === null) {
+            $this->cachedBannedWords = $this->createQueryBuilder('b')
+                ->select('b.word')
+                ->getQuery()
+                ->getSingleColumnResult();
+        }
+        return $this->cachedBannedWords;
+    }
+
+    /**
      * @param string $text
      *
      * @return bool
      */
     public function containsBannedWords($text)
     {
-        /** @var BannedWord[] $banned */
-        $banned = $this->findAll();
-        foreach($banned as $ban) {
-            $word = preg_quote($ban->getWord(), '/');
-            if (preg_match("/\b(${word})\b/i", $text)) {
-                return true;
-            }
+        $bannedWords = $this->getBannedWords();
+        if (empty($bannedWords)) {
+            return false;
         }
 
-        return false;
+        // Build a single regex pattern for all banned words
+        $patterns = array_map(function($word) {
+            return preg_quote($word, '/');
+        }, $bannedWords);
+
+        $combinedPattern = '/\b(' . implode('|', $patterns) . ')\b/i';
+        return (bool) preg_match($combinedPattern, $text);
     }
 }

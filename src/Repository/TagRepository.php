@@ -44,6 +44,25 @@ class TagRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find multiple tags by their names in a single query
+     *
+     * @param array $names
+     * @return Tag[]
+     */
+    public function findByNames(array $names): array
+    {
+        if (empty($names)) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('t')
+            ->where('t.name IN (:names)')
+            ->setParameter('names', array_map('strtolower', $names))
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param array $strings
      *
      * @return Collection
@@ -52,13 +71,31 @@ class TagRepository extends ServiceEntityRepository
     public function stringsToTags(array $strings)
     {
         $tags = new ArrayCollection();
-        foreach($strings as $string) {
-            $string = strtolower($string);
-            $tag    = $this->findByName($string);
-            if (!$tag) {
-                $tag = (new Tag())->setName($string);
+        if (empty($strings)) {
+            return $tags;
+        }
+
+        // Normalize all strings to lowercase
+        $normalizedStrings = array_map('strtolower', $strings);
+
+        // Fetch all existing tags in a single query
+        $existingTags = $this->findByNames($normalizedStrings);
+
+        // Index existing tags by name for O(1) lookup
+        $tagsByName = [];
+        foreach ($existingTags as $tag) {
+            $tagsByName[$tag->getName()] = $tag;
+        }
+
+        // Build result collection, creating new tags as needed
+        foreach ($normalizedStrings as $string) {
+            if (isset($tagsByName[$string])) {
+                $tags->add($tagsByName[$string]);
+            } else {
+                $newTag = (new Tag())->setName($string);
+                $tags->add($newTag);
+                $tagsByName[$string] = $newTag; // Prevent duplicates
             }
-            $tags->add($tag);
         }
 
         return $tags;

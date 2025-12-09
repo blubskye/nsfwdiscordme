@@ -28,11 +28,22 @@ class HomeController extends Controller
         $emeraldServer = null;
         if ($request->query->getInt('page', 1) === 1) {
             $emeraldServer = $this->em->getRepository(Server::class)
-                ->findOneBy(['premiumStatus' => Server::STATUS_EMERALD]);
+                ->createQueryBuilder('s')
+                ->select('s', 'c', 't')
+                ->leftJoin('s.categories', 'c')
+                ->leftJoin('s.tags', 't')
+                ->where('s.premiumStatus = :status')
+                ->setParameter(':status', Server::STATUS_EMERALD)
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
         }
 
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
+            ->select('s', 'c', 't')
+            ->leftJoin('s.categories', 'c')
+            ->leftJoin('s.tags', 't')
             ->where('s.isEnabled = 1')
             ->andWhere('s.isPublic = 1')
             ->andWhere('s.premiumStatus != :status')
@@ -40,7 +51,8 @@ class HomeController extends Controller
             ->orderBy('s.premiumStatus', 'desc')
             ->addOrderBy('s.bumpPoints', 'desc')
             ->addOrderBy('s.dateBumped', 'desc')
-            ->getQuery();
+            ->getQuery()
+            ->useResultCache(true, self::CACHE_LIFETIME);
 
         return $this->render('home/index.html.twig', [
             'sort'          => 'most-bumped',
@@ -57,6 +69,9 @@ class HomeController extends Controller
     {
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
+            ->select('s', 'c', 't')
+            ->leftJoin('s.categories', 'c')
+            ->leftJoin('s.tags', 't')
             ->leftJoin(ServerEvent::class, 'e', Join::WITH, 'e.server = s')
             ->where('s.isEnabled = 1')
             ->andWhere('s.isPublic = 1')
@@ -64,7 +79,8 @@ class HomeController extends Controller
             ->setParameter(':eventType', ServerEvent::TYPE_BUMP)
             ->orderBy('s.premiumStatus', 'desc')
             ->addOrderBy('e.dateCreated', 'desc')
-            ->getQuery();
+            ->getQuery()
+            ->useResultCache(true, self::CACHE_LIFETIME);
 
         return $this->render('home/index.html.twig', [
             'sort'    => 'recently-bumped',
@@ -81,10 +97,14 @@ class HomeController extends Controller
     {
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
+            ->select('s', 'c', 't')
+            ->leftJoin('s.categories', 'c')
+            ->leftJoin('s.tags', 't')
             ->where('s.isEnabled = 1')
             ->andWhere('s.isPublic = 1')
             ->orderBy('s.id', 'desc')
-            ->getQuery();
+            ->getQuery()
+            ->useResultCache(true, self::CACHE_LIFETIME);
 
         return $this->render('home/index.html.twig', [
             'sort'    => 'recently-added',
@@ -102,6 +122,9 @@ class HomeController extends Controller
     {
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
+            ->select('s', 'c', 't')
+            ->leftJoin('s.categories', 'c')
+            ->leftJoin('s.tags', 't')
             ->leftJoin(ServerEvent::class, 'e', Join::WITH, 'e.server = s')
             ->where('s.isEnabled = 1')
             ->andWhere('s.isPublic = 1')
@@ -126,6 +149,9 @@ class HomeController extends Controller
     {
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
+            ->select('s', 'c', 't')
+            ->leftJoin('s.categories', 'c')
+            ->leftJoin('s.tags', 't')
             ->where('s.isEnabled = 1')
             ->andWhere('s.isPublic = 1')
             ->orderBy('s.membersOnline', 'desc')

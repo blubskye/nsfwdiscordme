@@ -15,6 +15,9 @@ use InvalidArgumentException;
 #[ORM\Index(name: 'enabled_public_premium_idx', columns: ['is_enabled', 'is_public', 'premium_status'])]
 #[ORM\Index(name: 'enabled_public_bump_points_idx', columns: ['is_enabled', 'is_public', 'premium_status', 'bump_points', 'date_bumped'])]
 #[ORM\Index(name: 'enabled_public_members_online_idx', columns: ['is_enabled', 'is_public', 'members_online', 'bump_points', 'date_bumped'])]
+#[ORM\Index(name: 'discord_id_idx', columns: ['discord_id'])]
+#[ORM\Index(name: 'user_id_idx', columns: ['user_id'])]
+#[ORM\Index(name: 'date_created_idx', columns: ['date_created'])]
 #[ORM\Entity(repositoryClass: 'App\Repository\ServerRepository')]
 class Server implements LoggableEntityInterface
 {

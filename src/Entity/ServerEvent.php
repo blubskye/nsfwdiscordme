@@ -8,6 +8,9 @@ use InvalidArgumentException;
 
 #[ORM\Table(name: 'server_event')]
 #[ORM\Index(columns: ['server_id', 'event_type', 'date_created'])]
+#[ORM\Index(name: 'server_id_idx', columns: ['server_id'])]
+#[ORM\Index(name: 'user_id_idx', columns: ['user_id'])]
+#[ORM\Index(name: 'date_created_idx', columns: ['date_created'])]
 #[ORM\Entity(repositoryClass: 'App\Repository\ServerEventRepository')]
 class ServerEvent
 {
