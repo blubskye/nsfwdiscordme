@@ -15,7 +15,7 @@ use App\Event\ServerActionEvent;
 use App\Event\ViewEvent;
 use App\Form\Model\ServerTeamMemberModel;
 use App\Form\Type\ServerTeamMemberType;
-use App\Http\Request;
+use Symfony\Component\HttpFoundation\Request;
 use App\Form\Type\ServerType;
 use App\Media\Adapter\Exception\FileExistsException;
 use App\Media\Adapter\Exception\FileNotFoundException;
@@ -33,11 +33,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route(name="server_")
- */
+#[Route(name: 'server_')]
 class ServerController extends Controller
 {
     /**
@@ -54,8 +52,6 @@ class ServerController extends Controller
     }
 
     /**
-     * @Route("/{slug}", name="index")
-     *
      * @param string  $slug
      *
      * @param Request $request
@@ -63,7 +59,8 @@ class ServerController extends Controller
      * @return Response
      * @throws Exception
      */
-    public function indexAction($slug, Request $request)
+    #[Route('/{slug}', name: 'index')]
+    public function indexAction($slug, Request $request): Response
     {
         $server = $this->fetchServerOrThrow($slug);
 
@@ -76,14 +73,13 @@ class ServerController extends Controller
     }
 
     /**
-     * @Route("/server/stats/{slug}", name="stats")
-     *
      * @param string $slug
      *
      * @return Response
      * @throws Exception
      */
-    public function statsAction($slug)
+    #[Route('/server/stats/{slug}', name: 'stats')]
+    public function statsAction($slug): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_EDITOR)) {
@@ -131,8 +127,6 @@ class ServerController extends Controller
     }
 
     /**
-     * @Route("/server/team/{slug}", name="team", methods={"GET", "POST"})
-     *
      * @param string  $slug
      *
      * @param Request $request
@@ -140,7 +134,8 @@ class ServerController extends Controller
      * @return Response
      * @throws GuzzleException
      */
-    public function teamAction($slug, Request $request)
+    #[Route('/server/team/{slug}', name: 'team', methods: ['GET', 'POST'])]
+    public function teamAction($slug, Request $request): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_MANAGER)) {
@@ -233,15 +228,14 @@ class ServerController extends Controller
     }
 
     /**
-     * @Route("/server/team/{slug}", name="team_delete", methods={"DELETE"}, options={"expose"=true})
-     *
      * @param string  $slug
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function teamRemoveAction($slug, Request $request)
+    #[Route('/server/team/{slug}', name: 'team_delete', methods: ['DELETE'], options: ['expose' => true])]
+    public function teamRemoveAction($slug, Request $request): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_OWNER)) {
@@ -261,8 +255,6 @@ class ServerController extends Controller
     }
 
     /**
-     * @Route("/server/settings/{slug}", name="settings")
-     *
      * @param string  $slug
      * @param Request $request
      *
@@ -270,7 +262,8 @@ class ServerController extends Controller
      * @throws FileNotFoundException
      * @throws GuzzleException
      */
-    public function settingsAction($slug, Request $request)
+    #[Route('/server/settings/{slug}', name: 'settings')]
+    public function settingsAction($slug, Request $request): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_MANAGER)) {
@@ -320,8 +313,6 @@ class ServerController extends Controller
     }
 
     /**
-     * @Route("/server/add", name="add", options={"expose"=true})
-     *
      * @param Request $request
      *
      * @return Response
@@ -329,7 +320,8 @@ class ServerController extends Controller
      * @throws GuzzleException
      * @throws DiscordRateLimitException
      */
-    public function addAction(Request $request)
+    #[Route('/server/add', name: 'add', options: ['expose' => true])]
+    public function addAction(Request $request): Response
     {
         $user   = $this->getUser();
         $server = new Server();
@@ -386,7 +378,7 @@ class ServerController extends Controller
      * @throws Exception
      * @throws GuzzleException
      */
-    private function processForm(FormInterface $form, $isEditing)
+    private function processForm(FormInterface $form, $isEditing): bool
     {
         /** @var Server $server */
         $server   = $form->getData();
@@ -563,7 +555,7 @@ class ServerController extends Controller
      *
      * @return array
      */
-    private function getForbiddenSlugs()
+    private function getForbiddenSlugs(): array
     {
         $paths = [
             'admin'
@@ -592,7 +584,7 @@ class ServerController extends Controller
      * @throws FileNotFoundException
      * @throws WriteException
      */
-    private function moveBannerFile(UploadedFile $file, $cropData, Server $server)
+    private function moveBannerFile(UploadedFile $file, $cropData, Server $server): ?Media
     {
         if ($file->getError() !== 0) {
             return null;
@@ -634,7 +626,7 @@ class ServerController extends Controller
      * @throws FileNotFoundException
      * @throws WriteException
      */
-    private function moveIconFile($filename, Server $server)
+    private function moveIconFile($filename, Server $server): Media
     {
         $paths = new Paths();
         $path  = $paths->getPathByType(
@@ -653,7 +645,7 @@ class ServerController extends Controller
      * @return bool
      * @throws FileNotFoundException
      */
-    private function deleteUploadedFile(Media $media)
+    private function deleteUploadedFile(Media $media): bool
     {
         return $this->webHandler->getAdapter()->remove($media->getPath());
     }

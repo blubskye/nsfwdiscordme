@@ -6,11 +6,9 @@ use Elastica\Query\QueryString;
 use FOS\ElasticaBundle\Finder\PaginatedFinderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route(name="search_")
- */
+#[Route(name: 'search_')]
 class SearchController extends Controller
 {
     const ORDER_FIELDS = [
@@ -31,13 +29,12 @@ class SearchController extends Controller
     }
 
     /**
-     * @Route("/search", name="index")
-     *
      * @param Request $request
      *
      * @return Response
      */
-    public function indexAction(Request $request)
+    #[Route('/search', name: 'index')]
+    public function indexAction(Request $request): Response
     {
         $searchTerm = trim($request->query->get('q', ''));
         $orderField = trim($request->query->get('order', 'bumpPoints'));

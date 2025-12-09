@@ -5,62 +5,36 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
 
-/**
- * @ORM\Table(name="access_token")
- * @ORM\Entity(repositoryClass="App\Repository\AccessTokenRepository")
- */
+#[ORM\Table(name: 'access_token')]
+#[ORM\Entity(repositoryClass: 'App\Repository\AccessTokenRepository')]
 class AccessToken
 {
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var User
-     * @ORM\OneToOne(targetEntity="User", inversedBy="discordAccessToken")
-     * @ORM\JoinColumn(name="user_id", onDelete="CASCADE", referencedColumnName="id")
-     */
-    protected $user;
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'discordAccessToken')]
+    #[ORM\JoinColumn(name: 'user_id', onDelete: 'CASCADE', referencedColumnName: 'id')]
+    protected User $user;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255)
-     */
-    protected $token;
+    #[ORM\Column(type: 'string', length: 255)]
+    protected string $token;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255)
-     */
-    protected $refreshToken;
+    #[ORM\Column(type: 'string', length: 255)]
+    protected string $refreshToken;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255)
-     */
-    protected $scope;
+    #[ORM\Column(type: 'string', length: 255)]
+    protected string $scope;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255)
-     */
-    protected $type;
+    #[ORM\Column(type: 'string', length: 255)]
+    protected string $type;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateExpires;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateExpires;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
     /**
      * Constructor
@@ -89,9 +63,9 @@ class AccessToken
     /**
      * @param User $user
      *
-     * @return AccessToken
+     * @return self
      */
-    public function setUser(User $user): AccessToken
+    public function setUser(User $user): self
     {
         $this->user = $user;
 
@@ -109,9 +83,9 @@ class AccessToken
     /**
      * @param string $token
      *
-     * @return AccessToken
+     * @return self
      */
-    public function setToken(string $token): AccessToken
+    public function setToken(string $token): self
     {
         $this->token = $token;
 
@@ -129,9 +103,9 @@ class AccessToken
     /**
      * @param string $refreshToken
      *
-     * @return AccessToken
+     * @return self
      */
-    public function setRefreshToken(string $refreshToken): AccessToken
+    public function setRefreshToken(string $refreshToken): self
     {
         $this->refreshToken = $refreshToken;
 
@@ -149,9 +123,9 @@ class AccessToken
     /**
      * @param string $scope
      *
-     * @return AccessToken
+     * @return self
      */
-    public function setScope(string $scope): AccessToken
+    public function setScope(string $scope): self
     {
         $this->scope = $scope;
 
@@ -169,9 +143,9 @@ class AccessToken
     /**
      * @param string $type
      *
-     * @return AccessToken
+     * @return self
      */
-    public function setType(string $type): AccessToken
+    public function setType(string $type): self
     {
         $this->type = $type;
 
@@ -189,9 +163,9 @@ class AccessToken
     /**
      * @param DateTime $dateExpires
      *
-     * @return AccessToken
+     * @return self
      */
-    public function setDateExpires(DateTime $dateExpires): AccessToken
+    public function setDateExpires(DateTime $dateExpires): self
     {
         $this->dateExpires = $dateExpires;
 
@@ -221,9 +195,9 @@ class AccessToken
     /**
      * @param DateTime $dateCreated
      *
-     * @return AccessToken
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): AccessToken
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 

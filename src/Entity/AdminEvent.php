@@ -6,14 +6,9 @@ use DateTime;
 use Exception;
 use InvalidArgumentException;
 
-/**
- * @ORM\Table(name="admin_event",
- *  indexes={
- *      @ORM\Index(columns={"user_id", "event_type", "date_created"})
- *  }
- * )
- * @ORM\Entity(repositoryClass="App\Repository\AdminEventRepository")
- */
+#[ORM\Table(name: 'admin_event')]
+#[ORM\Index(columns: ['user_id', 'event_type', 'date_created'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\AdminEventRepository')]
 class AdminEvent
 {
     const TYPE_LOGIN         = 0;
@@ -28,38 +23,23 @@ class AdminEvent
         self::TYPE_UPDATE_ENTITY  => 'update'
     ];
 
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="user_id", onDelete="CASCADE", referencedColumnName="id", nullable=true)
-     */
-    protected $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', onDelete: 'CASCADE', referencedColumnName: 'id', nullable: true)]
+    protected ?User $user = null;
 
-    /**
-     * @var int
-     * @ORM\Column(type="smallint")
-     */
-    protected $eventType;
+    #[ORM\Column(type: 'smallint')]
+    protected int $eventType;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255)
-     */
-    protected $message;
+    #[ORM\Column(type: 'string', length: 255)]
+    protected string $message;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
     /**
      * Constructor
@@ -90,9 +70,9 @@ class AdminEvent
     /**
      * @param User $user
      *
-     * @return AdminEvent
+     * @return self
      */
-    public function setUser(User $user): AdminEvent
+    public function setUser(User $user): self
     {
         $this->user = $user;
 
@@ -110,9 +90,9 @@ class AdminEvent
     /**
      * @param int $eventType
      *
-     * @return AdminEvent
+     * @return self
      */
-    public function setEventType(int $eventType): AdminEvent
+    public function setEventType(int $eventType): self
     {
         if (!array_key_exists($eventType, self::TYPES)) {
             throw new InvalidArgumentException(
@@ -135,9 +115,9 @@ class AdminEvent
     /**
      * @param string $message
      *
-     * @return AdminEvent
+     * @return self
      */
-    public function setMessage(string $message): AdminEvent
+    public function setMessage(string $message): self
     {
         $this->message = $message;
 
@@ -155,9 +135,9 @@ class AdminEvent
     /**
      * @param DateTime $dateCreated
      *
-     * @return AdminEvent
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): AdminEvent
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 

@@ -93,7 +93,7 @@ class Controller extends AbstractController
     /**
      * @return User
      */
-    public function getUser()
+    public function getUser(): ?User
     {
         return parent::getUser();
     }
@@ -104,7 +104,7 @@ class Controller extends AbstractController
      *
      * @return PaginationInterface
      */
-    public function paginate($query, $limit = self::LIMIT)
+    public function paginate($query, $limit = self::LIMIT): PaginationInterface
     {
         return $this->paginator->paginate(
             $query,
@@ -118,7 +118,7 @@ class Controller extends AbstractController
      *
      * @return Server
      */
-    public function fetchServerOrThrow($slug)
+    public function fetchServerOrThrow($slug): Server
     {
         $server = $this->em->getRepository(Server::class)->findBySlug($slug);
         if (!$server || !$server->isEnabled()) {
@@ -135,7 +135,7 @@ class Controller extends AbstractController
      *
      * @return bool
      */
-    public function hasServerAccess(Server $server, $role = self::SERVER_ROLE_NONE, User $user = null)
+    public function hasServerAccess(Server $server, $role = self::SERVER_ROLE_NONE, User $user = null): bool
     {
         return $this->serverAccess->can($server, $role, $user);
     }

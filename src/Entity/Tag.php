@@ -7,37 +7,24 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use DateTime;
 use Exception;
 
-/**
- * @ORM\Table(name="tag")
- * @ORM\Entity(repositoryClass="App\Repository\TagRepository")
- */
+#[ORM\Table(name: 'tag')]
+#[ORM\Entity(repositoryClass: 'App\Repository\TagRepository')]
 class Tag implements LoggableEntityInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=100, unique=true)
-     */
-    protected $name;
+    #[ORM\Column(type: 'string', length: 100, unique: true)]
+    protected string $name;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     * @Gedmo\Timestampable(on="update")
-     */
-    protected $dateUpdated;
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    protected DateTime $dateUpdated;
 
     /**
      * Constructor
@@ -85,9 +72,9 @@ class Tag implements LoggableEntityInterface
     /**
      * @param string $name
      *
-     * @return Tag
+     * @return self
      */
-    public function setName(string $name): Tag
+    public function setName(string $name): self
     {
         $this->name = $name;
 
@@ -105,9 +92,9 @@ class Tag implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return Tag
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): Tag
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
@@ -125,9 +112,9 @@ class Tag implements LoggableEntityInterface
     /**
      * @param DateTime $dateUpdated
      *
-     * @return Tag
+     * @return self
      */
-    public function setDateUpdated(DateTime $dateUpdated): Tag
+    public function setDateUpdated(DateTime $dateUpdated): self
     {
         $this->dateUpdated = $dateUpdated;
 

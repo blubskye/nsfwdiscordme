@@ -1,0 +1,18 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block main %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Welcome to the Admin Dashboard</h5>
+                <p class="card-text">Use the sidebar menu to navigate to different sections.</p>
+                <a href="{{ path('admin_stats') }}" class="btn btn-primary">View Stats</a>
+                <a href="{{ path('admin_bumps') }}" class="btn btn-secondary">View Bump Points</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -5,7 +5,7 @@ use App\Entity\PurchasePeriod;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Exception;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * Class PurchasePeriodRepository
@@ -15,9 +15,9 @@ class PurchasePeriodRepository extends ServiceEntityRepository
     /**
      * Constructor
      *
-     * @param RegistryInterface $registry
+     * @param ManagerRegistry $registry
      */
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, PurchasePeriod::class);
     }

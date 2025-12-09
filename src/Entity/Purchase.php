@@ -7,10 +7,9 @@ use DateTime;
 use Exception;
 use InvalidArgumentException;
 
-/**
- * @ORM\Table(name="purchase", indexes={@ORM\Index(columns={"purchase_token"})})
- * @ORM\Entity(repositoryClass="App\Repository\PurchaseRepository")
- */
+#[ORM\Table(name: 'purchase')]
+#[ORM\Index(columns: ['purchase_token'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\PurchaseRepository')]
 class Purchase implements LoggableEntityInterface
 {
     const STATUS_PENDING = 0;
@@ -23,63 +22,36 @@ class Purchase implements LoggableEntityInterface
         self::STATUS_FAILURE
     ];
 
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var Server
-     * @ORM\ManyToOne(targetEntity="Server")
-     * @ORM\JoinColumn(name="server_id", onDelete="CASCADE", referencedColumnName="id", nullable=false)
-     */
-    protected $server;
+    #[ORM\ManyToOne(targetEntity: Server::class)]
+    #[ORM\JoinColumn(name: 'server_id', onDelete: 'CASCADE', referencedColumnName: 'id', nullable: false)]
+    protected Server $server;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="user_id", onDelete="CASCADE", referencedColumnName="id")
-     */
-    protected $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', onDelete: 'CASCADE', referencedColumnName: 'id')]
+    protected User $user;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=32, nullable=true)
-     */
-    protected $purchaseToken;
+    #[ORM\Column(type: 'string', length: 32, nullable: true)]
+    protected ?string $purchaseToken = null;
 
-    /**
-     * @var int
-     * @ORM\Column(type="smallint")
-     */
-    protected $status;
+    #[ORM\Column(type: 'smallint')]
+    protected int $status;
 
-    /**
-     * @var int
-     * @ORM\Column(type="smallint")
-     */
-    protected $premiumStatus;
+    #[ORM\Column(type: 'smallint')]
+    protected int $premiumStatus;
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     */
-    protected $period;
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    protected int $period;
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     */
-    protected $price;
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    protected int $price;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
     /**
      * Constructor
@@ -124,9 +96,9 @@ class Purchase implements LoggableEntityInterface
     /**
      * @param Server $server
      *
-     * @return Purchase
+     * @return self
      */
-    public function setServer(Server $server): Purchase
+    public function setServer(Server $server): self
     {
         $this->server = $server;
 
@@ -144,9 +116,9 @@ class Purchase implements LoggableEntityInterface
     /**
      * @param User $user
      *
-     * @return Purchase
+     * @return self
      */
-    public function setUser(User $user): Purchase
+    public function setUser(User $user): self
     {
         $this->user = $user;
 
@@ -164,9 +136,9 @@ class Purchase implements LoggableEntityInterface
     /**
      * @param string $purchaseToken
      *
-     * @return Purchase
+     * @return self
      */
-    public function setPurchaseToken(string $purchaseToken): Purchase
+    public function setPurchaseToken(string $purchaseToken): self
     {
         $this->purchaseToken = $purchaseToken;
 
@@ -184,9 +156,9 @@ class Purchase implements LoggableEntityInterface
     /**
      * @param int $status
      *
-     * @return Purchase
+     * @return self
      */
-    public function setStatus(int $status): Purchase
+    public function setStatus(int $status): self
     {
         if (!in_array($status, self::STATUSES)) {
             throw new InvalidArgumentException(
@@ -209,9 +181,9 @@ class Purchase implements LoggableEntityInterface
     /**
      * @param int $premiumStatus
      *
-     * @return Purchase
+     * @return self
      */
-    public function setPremiumStatus(int $premiumStatus): Purchase
+    public function setPremiumStatus(int $premiumStatus): self
     {
         $this->premiumStatus = $premiumStatus;
 
@@ -229,9 +201,9 @@ class Purchase implements LoggableEntityInterface
     /**
      * @param int $period
      *
-     * @return Purchase
+     * @return self
      */
-    public function setPeriod(int $period): Purchase
+    public function setPeriod(int $period): self
     {
         $this->period = $period;
 
@@ -249,9 +221,9 @@ class Purchase implements LoggableEntityInterface
     /**
      * @param int $price
      *
-     * @return Purchase
+     * @return self
      */
-    public function setPrice(int $price): Purchase
+    public function setPrice(int $price): self
     {
         $this->price = $price;
 
@@ -269,9 +241,9 @@ class Purchase implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return Purchase
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): Purchase
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 

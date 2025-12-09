@@ -10,10 +10,8 @@ use InvalidArgumentException;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-/**
- * @ORM\Table(name="user")
- * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- */
+#[ORM\Table(name: 'user')]
+#[ORM\Entity(repositoryClass: 'App\Repository\UserRepository')]
 class User implements UserInterface, LoggableEntityInterface
 {
     const ROLE_USER        = 'ROLE_USER';
@@ -26,90 +24,50 @@ class User implements UserInterface, LoggableEntityInterface
         self::ROLE_SUPER_ADMIN
     ];
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var array
-     * @ORM\Column(type="array")
-     */
-    protected $roles;
+    #[ORM\Column(type: 'array')]
+    protected array $roles = [];
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    protected $isEnabled;
+    #[ORM\Column(type: 'boolean')]
+    protected bool $isEnabled;
 
-    /**
-     * @var AccessToken
-     * @ORM\OneToOne(targetEntity="AccessToken", mappedBy="user", cascade={"persist"})
-     */
-    protected $discordAccessToken;
+    #[ORM\OneToOne(targetEntity: AccessToken::class, mappedBy: 'user', cascade: ['persist'])]
+    protected ?AccessToken $discordAccessToken = null;
 
-    /**
-     * @var int
-     * @ORM\Column(type="bigint", options={"unsigned"=true}, nullable=true)
-     */
-    protected $discordID;
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true], nullable: true)]
+    protected ?int $discordID = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=32, nullable=true)
-     */
-    protected $discordUsername;
+    #[ORM\Column(type: 'string', length: 32, nullable: true)]
+    protected ?string $discordUsername = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    protected $discordEmail;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $discordEmail = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    protected $discordAvatar;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    protected ?string $discordAvatar = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=4, nullable=true)
-     */
-    protected $discordDiscriminator;
+    #[ORM\Column(type: 'string', length: 4, nullable: true)]
+    protected ?string $discordDiscriminator = null;
 
-    /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity="Server", mappedBy="user")
-     */
-    protected $servers;
+    #[ORM\OneToMany(targetEntity: Server::class, mappedBy: 'user')]
+    protected Collection $servers;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    protected $googleAuthenticatorSecret;
+    #[ORM\Column(type: 'string', nullable: true)]
+    protected ?string $googleAuthenticatorSecret = null;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     * @Gedmo\Timestampable(on="update")
-     */
-    protected $dateUpdated;
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    protected DateTime $dateUpdated;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateLastLogin;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateLastLogin;
 
     /**
      * Constructor
@@ -128,7 +86,7 @@ class User implements UserInterface, LoggableEntityInterface
      */
     public function __toString(): string
     {
-        return $this->getUsername();
+        return $this->getUserIdentifier();
     }
 
     /**
@@ -163,9 +121,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param bool $isEnabled
      *
-     * @return User
+     * @return self
      */
-    public function setIsEnabled(bool $isEnabled): User
+    public function setIsEnabled(bool $isEnabled): self
     {
         $this->isEnabled = $isEnabled;
 
@@ -183,9 +141,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param AccessToken $discordAccessToken
      *
-     * @return User
+     * @return self
      */
-    public function setDiscordAccessToken(AccessToken $discordAccessToken): User
+    public function setDiscordAccessToken(AccessToken $discordAccessToken): self
     {
         $this->discordAccessToken = $discordAccessToken;
 
@@ -203,9 +161,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param int $discordID
      *
-     * @return User
+     * @return self
      */
-    public function setDiscordID(int $discordID): User
+    public function setDiscordID(int $discordID): self
     {
         $this->discordID = $discordID;
 
@@ -223,9 +181,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param string $discordUsername
      *
-     * @return User
+     * @return self
      */
-    public function setDiscordUsername(string $discordUsername): User
+    public function setDiscordUsername(string $discordUsername): self
     {
         $this->discordUsername = $discordUsername;
 
@@ -243,9 +201,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param string $discordEmail
      *
-     * @return User
+     * @return self
      */
-    public function setDiscordEmail(string $discordEmail): User
+    public function setDiscordEmail(string $discordEmail): self
     {
         $this->discordEmail = $discordEmail;
 
@@ -271,9 +229,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param string $discordAvatar
      *
-     * @return User
+     * @return self
      */
-    public function setDiscordAvatar(string $discordAvatar): User
+    public function setDiscordAvatar(string $discordAvatar): self
     {
         $this->discordAvatar = $discordAvatar;
 
@@ -291,9 +249,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param string $discordDiscriminator
      *
-     * @return User
+     * @return self
      */
-    public function setDiscordDiscriminator(string $discordDiscriminator): User
+    public function setDiscordDiscriminator(string $discordDiscriminator): self
     {
         $this->discordDiscriminator = $discordDiscriminator;
 
@@ -311,9 +269,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param Collection $servers
      *
-     * @return User
+     * @return self
      */
-    public function setServers(Collection $servers): User
+    public function setServers(Collection $servers): self
     {
         $this->servers = $servers;
 
@@ -331,9 +289,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return User
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): User
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
@@ -351,9 +309,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param DateTime $dateUpdated
      *
-     * @return User
+     * @return self
      */
-    public function setDateUpdated(DateTime $dateUpdated): User
+    public function setDateUpdated(DateTime $dateUpdated): self
     {
         $this->dateUpdated = $dateUpdated;
 
@@ -371,9 +329,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param DateTime $dateLastLogin
      *
-     * @return User
+     * @return self
      */
-    public function setDateLastLogin(DateTime $dateLastLogin): User
+    public function setDateLastLogin(DateTime $dateLastLogin): self
     {
         $this->dateLastLogin = $dateLastLogin;
 
@@ -401,9 +359,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param array $roles
      *
-     * @return User
+     * @return self
      */
-    public function setRoles(array $roles): User
+    public function setRoles(array $roles): self
     {
         $this->roles = [];
         foreach ($roles as $role) {
@@ -416,9 +374,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param string $role
      *
-     * @return User
+     * @return self
      */
-    public function addRole($role): User
+    public function addRole($role): self
     {
         $role = strtoupper($role);
         if (!in_array($role, self::ROLES)) {
@@ -436,9 +394,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param string $role
      *
-     * @return User
+     * @return self
      */
-    public function removeRole($role): User
+    public function removeRole($role): self
     {
         $role = strtoupper($role);
         if (!in_array($role, self::ROLES)) {
@@ -483,6 +441,14 @@ class User implements UserInterface, LoggableEntityInterface
     }
 
     /**
+     * @return string
+     */
+    public function getUserIdentifier(): string
+    {
+        return $this->getDiscordUsername() ?? '';
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function eraseCredentials()
@@ -507,7 +473,7 @@ class User implements UserInterface, LoggableEntityInterface
      */
     public function getGoogleAuthenticatorUsername(): string
     {
-        return $this->getUsername();
+        return $this->getUserIdentifier();
     }
 
     /**
@@ -524,9 +490,9 @@ class User implements UserInterface, LoggableEntityInterface
     /**
      * @param string|null $googleAuthenticatorSecret
      *
-     * @return User
+     * @return self
      */
-    public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): User
+    public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): self
     {
         $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;
 

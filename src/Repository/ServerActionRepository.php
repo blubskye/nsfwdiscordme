@@ -3,7 +3,7 @@ namespace App\Repository;
 
 use App\Entity\ServerAction;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * Class ServerActionRepository
@@ -13,9 +13,9 @@ class ServerActionRepository extends ServiceEntityRepository
     /**
      * Constructor
      *
-     * @param RegistryInterface $registry
+     * @param ManagerRegistry $registry
      */
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ServerAction::class);
     }

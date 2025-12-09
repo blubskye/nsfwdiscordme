@@ -8,10 +8,8 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use InvalidArgumentException;
 
-/**
- * @ORM\Table(name="media")
- * @ORM\Entity(repositoryClass="App\Repository\MediaRepository")
- */
+#[ORM\Table(name: 'media')]
+#[ORM\Entity(repositoryClass: 'App\Repository\MediaRepository')]
 class Media implements LoggableEntityInterface
 {
     const ADAPTERS = [
@@ -19,44 +17,26 @@ class Media implements LoggableEntityInterface
         'local'
     ];
 
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=20)
-     */
-    protected $name;
+    #[ORM\Column(type: 'string', length: 20)]
+    protected string $name;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255)
-     */
-    protected $path;
+    #[ORM\Column(type: 'string', length: 255)]
+    protected string $path;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=20)
-     */
-    protected $adapter;
+    #[ORM\Column(type: 'string', length: 20)]
+    protected string $adapter;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     * @Gedmo\Timestampable(on="update")
-     */
-    protected $dateUpdated;
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    protected DateTime $dateUpdated;
 
     /**
      * Constructor
@@ -96,9 +76,9 @@ class Media implements LoggableEntityInterface
     /**
      * @param string $name
      *
-     * @return Media
+     * @return self
      */
-    public function setName(string $name): Media
+    public function setName(string $name): self
     {
         $this->name = $name;
 
@@ -116,9 +96,9 @@ class Media implements LoggableEntityInterface
     /**
      * @param string $path
      *
-     * @return Media
+     * @return self
      */
-    public function setPath(string $path): Media
+    public function setPath(string $path): self
     {
         $this->path = $path;
 
@@ -136,9 +116,9 @@ class Media implements LoggableEntityInterface
     /**
      * @param string $adapter
      *
-     * @return Media
+     * @return self
      */
-    public function setAdapter(string $adapter): Media
+    public function setAdapter(string $adapter): self
     {
         if (!in_array($adapter, self::ADAPTERS)) {
             throw new InvalidArgumentException("Invalid adapter.");
@@ -159,9 +139,9 @@ class Media implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return Media
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): Media
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
@@ -179,9 +159,9 @@ class Media implements LoggableEntityInterface
     /**
      * @param DateTime $dateUpdated
      *
-     * @return Media
+     * @return self
      */
-    public function setDateUpdated(DateTime $dateUpdated): Media
+    public function setDateUpdated(DateTime $dateUpdated): self
     {
         $this->dateUpdated = $dateUpdated;
 

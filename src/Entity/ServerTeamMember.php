@@ -7,14 +7,9 @@ use DateTime;
 use Exception;
 use InvalidArgumentException;
 
-/**
- * @ORM\Table(name="server_team_member",
- *     uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"server_id", "discord_username", "discord_discriminator"})
- *     }
- * )
- * @ORM\Entity(repositoryClass="App\Repository\ServerTeamMemberRepository")
- */
+#[ORM\Table(name: 'server_team_member')]
+#[ORM\UniqueConstraint(columns: ['server_id', 'discord_username', 'discord_discriminator'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\ServerTeamMemberRepository')]
 class ServerTeamMember implements LoggableEntityInterface
 {
     const ROLE_OWNER   = 'owner';
@@ -27,69 +22,39 @@ class ServerTeamMember implements LoggableEntityInterface
         self::ROLE_EDITOR
     ];
 
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var Server
-     * @ORM\ManyToOne(targetEntity="Server", inversedBy="teamMembers")
-     * @ORM\JoinColumn(name="server_id", onDelete="CASCADE", referencedColumnName="id")
-     */
-    protected $server;
+    #[ORM\ManyToOne(targetEntity: Server::class, inversedBy: 'teamMembers')]
+    #[ORM\JoinColumn(name: 'server_id', onDelete: 'CASCADE', referencedColumnName: 'id')]
+    protected Server $server;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="User", cascade={"persist"})
-     * @ORM\JoinColumn(name="user_id", onDelete="CASCADE", referencedColumnName="id", nullable=true)
-     */
-    protected $user;
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'user_id', onDelete: 'CASCADE', referencedColumnName: 'id', nullable: true)]
+    protected ?User $user = null;
 
-    /**
-     * @var int
-     * @ORM\Column(type="bigint", options={"unsigned"=true}, nullable=true)
-     */
-    protected $discordID;
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true], nullable: true)]
+    protected ?int $discordID = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=32, nullable=true)
-     */
-    protected $discordUsername;
+    #[ORM\Column(type: 'string', length: 32, nullable: true)]
+    protected ?string $discordUsername = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=4, nullable=true)
-     */
-    protected $discordDiscriminator;
+    #[ORM\Column(type: 'string', length: 4, nullable: true)]
+    protected ?string $discordDiscriminator = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    protected $discordAvatar;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    protected ?string $discordAvatar = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=20)
-     */
-    protected $role;
+    #[ORM\Column(type: 'string', length: 20)]
+    protected string $role;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $dateLastAction;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    protected ?DateTime $dateLastAction = null;
 
     /**
      * Constructor
@@ -141,9 +106,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param Server $server
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setServer(Server $server): ServerTeamMember
+    public function setServer(Server $server): self
     {
         $this->server = $server;
 
@@ -161,9 +126,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param User $user
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setUser(User $user): ServerTeamMember
+    public function setUser(User $user): self
     {
         $this->user = $user;
 
@@ -181,9 +146,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param int $discordID
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setDiscordID(int $discordID): ServerTeamMember
+    public function setDiscordID(int $discordID): self
     {
         $this->discordID = $discordID;
 
@@ -201,9 +166,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param string $discordUsername
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setDiscordUsername(string $discordUsername): ServerTeamMember
+    public function setDiscordUsername(string $discordUsername): self
     {
         $this->discordUsername = $discordUsername;
 
@@ -221,9 +186,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param string $discordDiscriminator
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setDiscordDiscriminator(string $discordDiscriminator): ServerTeamMember
+    public function setDiscordDiscriminator(string $discordDiscriminator): self
     {
         $this->discordDiscriminator = $discordDiscriminator;
 
@@ -241,9 +206,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param string $discordAvatar
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setDiscordAvatar(string $discordAvatar): ServerTeamMember
+    public function setDiscordAvatar(string $discordAvatar): self
     {
         $this->discordAvatar = $discordAvatar;
 
@@ -261,9 +226,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param string $role
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setRole(string $role): ServerTeamMember
+    public function setRole(string $role): self
     {
         if (!in_array($role, self::ROLES)) {
             throw new InvalidArgumentException(
@@ -286,9 +251,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): ServerTeamMember
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
@@ -306,9 +271,9 @@ class ServerTeamMember implements LoggableEntityInterface
     /**
      * @param DateTime $dateLastAction
      *
-     * @return ServerTeamMember
+     * @return self
      */
-    public function setDateLastAction(DateTime $dateLastAction): ServerTeamMember
+    public function setDateLastAction(DateTime $dateLastAction): self
     {
         $this->dateLastAction = $dateLastAction;
 

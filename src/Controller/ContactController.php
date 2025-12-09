@@ -3,25 +3,21 @@ namespace App\Controller;
 
 use App\Form\Model\ContactModel;
 use App\Form\Type\ContactType;
-use App\Http\Request;
+use Symfony\Component\HttpFoundation\Request;
 use App\Services\RecaptchaService;
 use GuzzleHttp\Exception\GuzzleException;
 use Swift_Mailer;
 use Swift_Message;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route(name="contact_")
- */
+#[Route(name: 'contact_')]
 class ContactController extends Controller
 {
     const TO_EMAIL = 'sean@headzoo.io';
 
     /**
-     * @Route("/contact", name="index")
-     *
      * @param Request          $request
      * @param RecaptchaService $recaptchaService
      * @param Swift_Mailer     $mailer
@@ -29,7 +25,8 @@ class ContactController extends Controller
      * @return Response
      * @throws GuzzleException
      */
-    public function indexAction(Request $request, RecaptchaService $recaptchaService, Swift_Mailer $mailer)
+    #[Route('/contact', name: 'index')]
+    public function indexAction(Request $request, RecaptchaService $recaptchaService, Swift_Mailer $mailer): Response
     {
         $model = new ContactModel();
         $form  = $this->createForm(ContactType::class, $model);

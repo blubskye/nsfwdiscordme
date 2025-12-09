@@ -3,7 +3,7 @@ namespace App\Repository;
 
 use App\Entity\BannedUser;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * Class BannedUserRepository
@@ -13,9 +13,9 @@ class BannedUserRepository extends ServiceEntityRepository
     /**
      * Constructor
      *
-     * @param RegistryInterface $registry
+     * @param ManagerRegistry $registry
      */
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, BannedUser::class);
     }

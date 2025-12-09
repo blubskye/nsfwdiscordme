@@ -5,7 +5,7 @@ use App\Entity\Purchase;
 use App\Entity\PurchasePeriod;
 use App\Entity\Server;
 use App\Event\ServerActionEvent;
-use App\Http\Request;
+use Symfony\Component\HttpFoundation\Request;
 use App\Services\PaymentService;
 use DateTime;
 use Exception;
@@ -13,12 +13,10 @@ use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-/**
- * @Route(name="upgrade_")
- */
+#[Route(name: 'upgrade_')]
 class UpgradeController extends Controller
 {
     const PRICES = [
@@ -31,14 +29,13 @@ class UpgradeController extends Controller
     ];
 
     /**
-     * @Route("/upgrade/server/{slug}", name="index", methods={"GET"})
-     *
      * @param string  $slug
      *
      * @return Response
      * @throws Exception
      */
-    public function indexAction($slug)
+    #[Route('/upgrade/server/{slug}', name: 'index', methods: ['GET'])]
+    public function indexAction($slug): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_MANAGER)) {
@@ -53,8 +50,6 @@ class UpgradeController extends Controller
     }
 
     /**
-     * @Route("/upgrade/server/{slug}", name="purchase", methods={"POST"})
-     *
      * @param string         $slug
      * @param Request        $request
      * @param PaymentService $paymentService
@@ -63,7 +58,8 @@ class UpgradeController extends Controller
      * @throws GuzzleException
      * @throws Exception
      */
-    public function purchaseAction($slug, Request $request, PaymentService $paymentService)
+    #[Route('/upgrade/server/{slug}', name: 'purchase', methods: ['POST'])]
+    public function purchaseAction($slug, Request $request, PaymentService $paymentService): RedirectResponse
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_MANAGER)) {
@@ -108,14 +104,13 @@ class UpgradeController extends Controller
     }
 
     /**
-     * @Route("/upgrade/complete", name="complete")
-     *
      * @param Request $request
      *
      * @return Response
      * @throws Exception
      */
-    public function completeAction(Request $request)
+    #[Route('/upgrade/complete', name: 'complete')]
+    public function completeAction(Request $request): Response
     {
         $token = $request->query->get('t');
         if (!$token) {
@@ -138,10 +133,8 @@ class UpgradeController extends Controller
         ]);
     }
 
-    /**
-     * @Route("/upgrade/failure", name="failure")
-     */
-    public function failureAction()
+    #[Route('/upgrade/failure', name: 'failure')]
+    public function failureAction(): Response
     {
         $this->addFlash('danger', 'Payment failure!');
 
@@ -151,8 +144,6 @@ class UpgradeController extends Controller
     }
 
     /**
-     * @Route("/webhook", name="webhook", methods={"POST"})
-     *
      * @param Request        $request
      * @param PaymentService $paymentService
      *
@@ -160,7 +151,8 @@ class UpgradeController extends Controller
      * @throws Exception
      * @throws GuzzleException
      */
-    public function webhookAction(Request $request, PaymentService $paymentService)
+    #[Route('/webhook', name: 'webhook', methods: ['POST'])]
+    public function webhookAction(Request $request, PaymentService $paymentService): JsonResponse
     {
         $success       = $request->json->get('success');
         $token         = $request->json->get('token');

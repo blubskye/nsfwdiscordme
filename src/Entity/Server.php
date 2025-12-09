@@ -10,15 +10,12 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use InvalidArgumentException;
 
-/**
- * @ORM\Table(name="server", indexes={
- *     @ORM\Index(name="enabled_public_idx", columns={"is_enabled", "is_public"}),
- *     @ORM\Index(name="enabled_public_premium_idx", columns={"is_enabled", "is_public", "premium_status"}),
- *     @ORM\Index(name="enabled_public_bump_points_idx", columns={"is_enabled", "is_public", "premium_status", "bump_points", "date_bumped"}),
- *     @ORM\Index(name="enabled_public_members_online_idx", columns={"is_enabled", "is_public", "members_online", "bump_points", "date_bumped"})
- * })
- * @ORM\Entity(repositoryClass="App\Repository\ServerRepository")
- */
+#[ORM\Table(name: 'server')]
+#[ORM\Index(name: 'enabled_public_idx', columns: ['is_enabled', 'is_public'])]
+#[ORM\Index(name: 'enabled_public_premium_idx', columns: ['is_enabled', 'is_public', 'premium_status'])]
+#[ORM\Index(name: 'enabled_public_bump_points_idx', columns: ['is_enabled', 'is_public', 'premium_status', 'bump_points', 'date_bumped'])]
+#[ORM\Index(name: 'enabled_public_members_online_idx', columns: ['is_enabled', 'is_public', 'members_online', 'bump_points', 'date_bumped'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\ServerRepository')]
 class Server implements LoggableEntityInterface
 {
     const STATUS_STANDARD     = 0;
@@ -57,196 +54,103 @@ class Server implements LoggableEntityInterface
         self::INVITE_TYPE_WIDGET
     ];
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var int
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     */
-    protected $discordID;
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    protected int $discordID;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="servers")
-     * @ORM\JoinColumn(name="user_id", onDelete="CASCADE", referencedColumnName="id")
-     */
-    protected $user;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'servers')]
+    #[ORM\JoinColumn(name: 'user_id', onDelete: 'CASCADE', referencedColumnName: 'id')]
+    protected User $user;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=100, unique=true)
-     */
-    protected $slug;
+    #[ORM\Column(type: 'string', length: 100, unique: true)]
+    protected string $slug;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=100)
-     */
-    protected $name;
+    #[ORM\Column(type: 'string', length: 100)]
+    protected string $name;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    protected $iconHash;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    protected ?string $iconHash = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    protected $bannerHash;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    protected ?string $bannerHash = null;
 
-    /**
-     * @var Media
-     * @ORM\OneToOne(targetEntity="Media", cascade={"persist"})
-     */
-    protected $iconMedia;
+    #[ORM\OneToOne(targetEntity: Media::class, cascade: ['persist'])]
+    protected ?Media $iconMedia = null;
 
-    /**
-     * @var Media
-     * @ORM\OneToOne(targetEntity="Media", cascade={"persist"})
-     */
-    protected $bannerMedia;
+    #[ORM\OneToOne(targetEntity: Media::class, cascade: ['persist'])]
+    protected ?Media $bannerMedia = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    protected $vanityURL;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $vanityURL = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=160, nullable=true)
-     */
-    protected $summary;
+    #[ORM\Column(type: 'string', length: 160, nullable: true)]
+    protected ?string $summary = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="text", nullable=true)
-     */
-    protected $description;
+    #[ORM\Column(type: 'text', nullable: true)]
+    protected ?string $description = null;
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     */
-    protected $bumpPoints = 0;
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    protected int $bumpPoints = 0;
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     */
-    protected $membersOnline = 0;
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    protected int $membersOnline = 0;
 
-    /**
-     * @var int
-     * @ORM\Column(type="smallint")
-     */
-    protected $premiumStatus;
+    #[ORM\Column(type: 'smallint')]
+    protected int $premiumStatus;
 
-    /**
-     * @var Collection
-     * @ORM\ManyToMany(targetEntity="Category", cascade={"persist"})
-     * @ORM\JoinTable(
-     *     name="server_categories",
-     *     joinColumns={@ORM\JoinColumn(name="server_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="category_id", referencedColumnName="id")}
-     * )
-     */
-    protected $categories;
+    #[ORM\ManyToMany(targetEntity: Category::class, cascade: ['persist'])]
+    #[ORM\JoinTable(name: 'server_categories')]
+    #[ORM\JoinColumn(name: 'server_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'category_id', referencedColumnName: 'id')]
+    protected Collection $categories;
 
-    /**
-     * @var Collection
-     * @ORM\ManyToMany(targetEntity="Tag", cascade={"persist"})
-     * @ORM\JoinTable(
-     *     name="server_tags",
-     *     joinColumns={@ORM\JoinColumn(name="server_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id")}
-     * )
-     */
-    protected $tags;
+    #[ORM\ManyToMany(targetEntity: Tag::class, cascade: ['persist'])]
+    #[ORM\JoinTable(name: 'server_tags')]
+    #[ORM\JoinColumn(name: 'server_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'tag_id', referencedColumnName: 'id')]
+    protected Collection $tags;
 
-    /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity="ServerTeamMember", mappedBy="server")
-     */
-    protected $teamMembers;
+    #[ORM\OneToMany(targetEntity: ServerTeamMember::class, mappedBy: 'server')]
+    protected Collection $teamMembers;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=20)
-     */
-    protected $inviteType;
+    #[ORM\Column(type: 'string', length: 20)]
+    protected string $inviteType;
 
-    /**
-     * @var int
-     * @ORM\Column(type="bigint", options={"unsigned"=true}, nullable=true)
-     */
-    protected $botInviteChannelID;
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true], nullable: true)]
+    protected ?int $botInviteChannelID = null;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    protected $botHumanCheck = false;
+    #[ORM\Column(type: 'boolean')]
+    protected bool $botHumanCheck = false;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    protected $serverPassword;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    protected ?string $serverPassword = null;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    protected $isPublic = true;
+    #[ORM\Column(type: 'boolean')]
+    protected bool $isPublic = true;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    protected $isActive = true;
+    #[ORM\Column(type: 'boolean')]
+    protected bool $isActive = true;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    protected $isEnabled = true;
+    #[ORM\Column(type: 'boolean')]
+    protected bool $isEnabled = true;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $dateBumped;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    protected ?DateTime $dateBumped = null;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     * @Gedmo\Timestampable(on="update")
-     */
-    protected $dateUpdated;
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    protected DateTime $dateUpdated;
 
-    /**
-     * @var int
-     */
-    protected $nextBumpSeconds = 0;
+    protected int $nextBumpSeconds = 0;
 
-    /**
-     * @var ServerEvent
-     */
-    protected $lastBumpEvent;
+    protected ?ServerEvent $lastBumpEvent = null;
 
     /**
      * Constructor
@@ -298,9 +202,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param int $discordID
      *
-     * @return Server
+     * @return self
      */
-    public function setDiscordID($discordID): Server
+    public function setDiscordID($discordID): self
     {
         $this->discordID = $discordID;
 
@@ -318,9 +222,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param User $user
      *
-     * @return Server
+     * @return self
      */
-    public function setUser(User $user): Server
+    public function setUser(User $user): self
     {
         $this->user = $user;
 
@@ -338,9 +242,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $slug
      *
-     * @return Server
+     * @return self
      */
-    public function setSlug(string $slug): Server
+    public function setSlug(string $slug): self
     {
         $this->slug = $slug;
 
@@ -358,9 +262,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $name
      *
-     * @return Server
+     * @return self
      */
-    public function setName(string $name): Server
+    public function setName(string $name): self
     {
         $this->name = $name;
 
@@ -378,9 +282,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $iconHash
      *
-     * @return Server
+     * @return self
      */
-    public function setIconHash(string $iconHash): Server
+    public function setIconHash(string $iconHash): self
     {
         $this->iconHash = $iconHash;
 
@@ -398,9 +302,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $bannerHash
      *
-     * @return Server
+     * @return self
      */
-    public function setBannerHash(string $bannerHash): Server
+    public function setBannerHash(string $bannerHash): self
     {
         $this->bannerHash = $bannerHash;
 
@@ -418,9 +322,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param Media $iconMedia
      *
-     * @return Server
+     * @return self
      */
-    public function setIconMedia(Media $iconMedia): Server
+    public function setIconMedia(Media $iconMedia): self
     {
         $this->iconMedia = $iconMedia;
 
@@ -438,9 +342,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param Media $bannerMedia
      *
-     * @return Server
+     * @return self
      */
-    public function setBannerMedia(Media $bannerMedia): Server
+    public function setBannerMedia(Media $bannerMedia): self
     {
         $this->bannerMedia = $bannerMedia;
 
@@ -458,9 +362,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $vanityURL
      *
-     * @return Server
+     * @return self
      */
-    public function setVanityURL(string $vanityURL): Server
+    public function setVanityURL(string $vanityURL): self
     {
         $this->vanityURL = $vanityURL;
 
@@ -478,9 +382,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $summary
      *
-     * @return Server
+     * @return self
      */
-    public function setSummary(string $summary): Server
+    public function setSummary(string $summary): self
     {
         $this->summary = $summary;
 
@@ -498,9 +402,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $description
      *
-     * @return Server
+     * @return self
      */
-    public function setDescription(string $description): Server
+    public function setDescription(string $description): self
     {
         $this->description = $description;
 
@@ -526,9 +430,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param int $premiumStatus
      *
-     * @return Server
+     * @return self
      */
-    public function setPremiumStatus(int $premiumStatus): Server
+    public function setPremiumStatus(int $premiumStatus): self
     {
         if (!in_array($premiumStatus, self::STATUSES)) {
             throw new InvalidArgumentException(
@@ -545,7 +449,7 @@ class Server implements LoggableEntityInterface
      *
      * @return $this
      */
-    public function setPremiumStatusString($status): Server
+    public function setPremiumStatusString($status): self
     {
         $index = array_search($status, self::STATUSES_STR);
         $this->setPremiumStatus($index);
@@ -564,9 +468,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param Collection $categories
      *
-     * @return Server
+     * @return self
      */
-    public function setCategories(Collection $categories): Server
+    public function setCategories(Collection $categories): self
     {
         $this->categories = $categories;
 
@@ -584,9 +488,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param Collection $tags
      *
-     * @return Server
+     * @return self
      */
-    public function setTags(Collection $tags): Server
+    public function setTags(Collection $tags): self
     {
         $this->tags = $tags;
 
@@ -604,9 +508,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param int $bumpPoints
      *
-     * @return Server
+     * @return self
      */
-    public function setBumpPoints(int $bumpPoints): Server
+    public function setBumpPoints(int $bumpPoints): self
     {
         $this->bumpPoints = $bumpPoints;
 
@@ -616,9 +520,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param int $points
      *
-     * @return Server
+     * @return self
      */
-    public function incrementBumpPoints(int $points = 1) : Server
+    public function incrementBumpPoints(int $points = 1) : self
     {
         return $this->setBumpPoints($this->getBumpPoints() + $points);
     }
@@ -634,9 +538,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param int $membersOnline
      *
-     * @return Server
+     * @return self
      */
-    public function setMembersOnline(int $membersOnline): Server
+    public function setMembersOnline(int $membersOnline): self
     {
         $this->membersOnline = $membersOnline;
 
@@ -654,9 +558,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $inviteType
      *
-     * @return Server
+     * @return self
      */
-    public function setInviteType(string $inviteType): Server
+    public function setInviteType(string $inviteType): self
     {
         if (!in_array($inviteType, self::INVITE_TYPES)) {
             throw new InvalidArgumentException(
@@ -679,9 +583,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param int $botInviteChannelID
      *
-     * @return Server
+     * @return self
      */
-    public function setBotInviteChannelID(int $botInviteChannelID): Server
+    public function setBotInviteChannelID(int $botInviteChannelID): self
     {
         $this->botInviteChannelID = $botInviteChannelID;
 
@@ -699,9 +603,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param bool $botHumanCheck
      *
-     * @return Server
+     * @return self
      */
-    public function setBotHumanCheck(bool $botHumanCheck): Server
+    public function setBotHumanCheck(bool $botHumanCheck): self
     {
         $this->botHumanCheck = $botHumanCheck;
 
@@ -719,9 +623,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param string $serverPassword
      *
-     * @return Server
+     * @return self
      */
-    public function setServerPassword(string $serverPassword): Server
+    public function setServerPassword(string $serverPassword): self
     {
         $this->serverPassword = $serverPassword;
 
@@ -739,9 +643,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param bool $isPublic
      *
-     * @return Server
+     * @return self
      */
-    public function setIsPublic(bool $isPublic): Server
+    public function setIsPublic(bool $isPublic): self
     {
         $this->isPublic = $isPublic;
 
@@ -759,9 +663,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param bool $isActive
      *
-     * @return Server
+     * @return self
      */
-    public function setIsActive(bool $isActive): Server
+    public function setIsActive(bool $isActive): self
     {
         $this->isActive = $isActive;
 
@@ -779,9 +683,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param bool $isEnabled
      *
-     * @return Server
+     * @return self
      */
-    public function setIsEnabled(bool $isEnabled): Server
+    public function setIsEnabled(bool $isEnabled): self
     {
         $this->isEnabled = $isEnabled;
 
@@ -799,9 +703,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param Collection $teamMembers
      *
-     * @return Server
+     * @return self
      */
-    public function setTeamMembers(Collection $teamMembers): Server
+    public function setTeamMembers(Collection $teamMembers): self
     {
         $this->teamMembers = $teamMembers;
 
@@ -819,9 +723,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param DateTime $dateBumped
      *
-     * @return Server
+     * @return self
      */
-    public function setDateBumped(DateTime $dateBumped): Server
+    public function setDateBumped(DateTime $dateBumped): self
     {
         $this->dateBumped = $dateBumped;
 
@@ -839,9 +743,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return Server
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): Server
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
@@ -859,9 +763,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param DateTime $dateUpdated
      *
-     * @return Server
+     * @return self
      */
-    public function setDateUpdated(DateTime $dateUpdated): Server
+    public function setDateUpdated(DateTime $dateUpdated): self
     {
         $this->dateUpdated = $dateUpdated;
 
@@ -884,9 +788,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param Category $category1
      *
-     * @return Server
+     * @return self
      */
-    public function setCategory1(Category $category1): Server
+    public function setCategory1(Category $category1): self
     {
         $categories = $this->getCategories();
         $categories[0] = $category1;
@@ -911,9 +815,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param Category $category2
      *
-     * @return Server
+     * @return self
      */
-    public function setCategory2(Category $category2): Server
+    public function setCategory2(Category $category2): self
     {
         $categories = $this->getCategories();
         $categories[1] = $category2;
@@ -933,9 +837,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param int $nextBumpSeconds
      *
-     * @return Server
+     * @return self
      */
-    public function setNextBumpSeconds(int $nextBumpSeconds): Server
+    public function setNextBumpSeconds(int $nextBumpSeconds): self
     {
         $this->nextBumpSeconds = $nextBumpSeconds;
 
@@ -953,9 +857,9 @@ class Server implements LoggableEntityInterface
     /**
      * @param ServerEvent $lastBumpEvent
      *
-     * @return Server
+     * @return self
      */
-    public function setLastBumpEvent(?ServerEvent $lastBumpEvent): Server
+    public function setLastBumpEvent(?ServerEvent $lastBumpEvent): self
     {
         $this->lastBumpEvent = $lastBumpEvent;
 

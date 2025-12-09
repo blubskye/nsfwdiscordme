@@ -6,41 +6,24 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
 
-/**
- * @ORM\Table(name="banned_server",
- *     uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"discord_id"})
- *     }
- * )
- * @ORM\Entity(repositoryClass="App\Repository\BannedServerRepository")
- */
+#[ORM\Table(name: 'banned_server')]
+#[ORM\UniqueConstraint(columns: ['discord_id'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\BannedServerRepository')]
 class BannedServer implements LoggableEntityInterface
 {
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var int
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     */
-    protected $discordID;
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    protected int $discordID;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    protected $reason;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $reason = null;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
     /**
      * Constructor
@@ -79,9 +62,9 @@ class BannedServer implements LoggableEntityInterface
     /**
      * @param int $discordID
      *
-     * @return BannedServer
+     * @return self
      */
-    public function setDiscordID(int $discordID): BannedServer
+    public function setDiscordID(int $discordID): self
     {
         $this->discordID = $discordID;
 
@@ -99,9 +82,9 @@ class BannedServer implements LoggableEntityInterface
     /**
      * @param string $reason
      *
-     * @return BannedServer
+     * @return self
      */
-    public function setReason(string $reason): BannedServer
+    public function setReason(string $reason): self
     {
         $this->reason = $reason;
 
@@ -119,9 +102,9 @@ class BannedServer implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return BannedServer
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): BannedServer
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 

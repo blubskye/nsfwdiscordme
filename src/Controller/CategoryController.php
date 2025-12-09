@@ -5,21 +5,18 @@ use App\Entity\Category;
 use App\Entity\Server;
 use App\Entity\Tag;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route(name="category_")
- */
+#[Route(name: 'category_')]
 class CategoryController extends Controller
 {
     /**
-     * @Route("/category/{slug}", name="index")
-     *
      * @param string $slug
      *
      * @return Response
      */
-    public function indexAction($slug)
+    #[Route('/category/{slug}', name: 'index')]
+    public function indexAction($slug): Response
     {
         $category = $this->em->getRepository(Category::class)->findBySlug($slug);
         if (!$category) {
@@ -44,13 +41,12 @@ class CategoryController extends Controller
     }
 
     /**
-     * @Route("/tag/{tag}", name="tag")
-     *
      * @param string $tag
      *
      * @return Response
      */
-    public function tagAction($tag)
+    #[Route('/tag/{tag}', name: 'tag')]
+    public function tagAction($tag): Response
     {
         $tag = $this->em->getRepository(Tag::class)->findByName($tag);
         if (!$tag) {
@@ -74,10 +70,8 @@ class CategoryController extends Controller
         ]);
     }
 
-    /**
-     * @Route("/tags", name="tags")
-     */
-    public function tagsAction()
+    #[Route('/tags', name: 'tags')]
+    public function tagsAction(): Response
     {
         return $this->render('category/tags.html.twig', [
             'tags'  => $this->em->getRepository(Tag::class)->findAll(),

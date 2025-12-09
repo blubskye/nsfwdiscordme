@@ -6,20 +6,17 @@ use App\Entity\Server;
 use App\Entity\ServerEvent;
 use Exception;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route(name="profile_")
- */
+#[Route(name: 'profile_')]
 class ProfileController extends Controller
 {
     /**
-     * @Route("/profile", name="index", options={"expose"=true})
-     *
      * @return Response
      * @throws Exception
      */
-    public function indexAction()
+    #[Route('/profile', name: 'index', options: ['expose' => true])]
+    public function indexAction(): Response
     {
         /** @var Server $premiumServer */
         $eventRepo = $this->em->getRepository(ServerEvent::class);
@@ -65,21 +62,18 @@ class ProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/settings", name="settings")
-     *
      * @return Response
      */
-    public function settingsAction()
+    #[Route('/profile/settings', name: 'settings')]
+    public function settingsAction(): Response
     {
         return $this->render('profile/settings.html.twig', [
             'title' => 'Profile Settings'
         ]);
     }
 
-    /**
-     * @Route("/profile/invoices", name="invoices")
-     */
-    public function invoicesAction()
+    #[Route('/profile/invoices', name: 'invoices')]
+    public function invoicesAction(): Response
     {
         $purchases = $this->em->getRepository(Purchase::class)->findByUser($this->getUser());
 

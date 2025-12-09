@@ -5,52 +5,31 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
 
-/**
- * @ORM\Table(name="purchase_period", indexes={
- *      @ORM\Index(columns={"is_complete", "date_expires"})
- * })
- * @ORM\Entity(repositoryClass="App\Repository\PurchasePeriodRepository")
- */
+#[ORM\Table(name: 'purchase_period')]
+#[ORM\Index(columns: ['is_complete', 'date_expires'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\PurchasePeriodRepository')]
 class PurchasePeriod
 {
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var Purchase
-     * @ORM\OneToOne(targetEntity="Purchase")
-     * @ORM\JoinColumn(name="purchase_id", onDelete="CASCADE", referencedColumnName="id", nullable=false)
-     */
-    protected $purchase;
+    #[ORM\OneToOne(targetEntity: Purchase::class)]
+    #[ORM\JoinColumn(name: 'purchase_id', onDelete: 'CASCADE', referencedColumnName: 'id', nullable: false)]
+    protected Purchase $purchase;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    protected $isComplete;
+    #[ORM\Column(type: 'boolean')]
+    protected bool $isComplete;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $dateBegins;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    protected ?DateTime $dateBegins = null;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $dateExpires;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    protected ?DateTime $dateExpires = null;
 
     /**
      * Constructor
@@ -82,9 +61,9 @@ class PurchasePeriod
     /**
      * @param Purchase $purchase
      *
-     * @return PurchasePeriod
+     * @return self
      */
-    public function setPurchase(Purchase $purchase): PurchasePeriod
+    public function setPurchase(Purchase $purchase): self
     {
         $this->purchase = $purchase;
 
@@ -102,9 +81,9 @@ class PurchasePeriod
     /**
      * @param bool $isComplete
      *
-     * @return PurchasePeriod
+     * @return self
      */
-    public function setIsComplete(bool $isComplete): PurchasePeriod
+    public function setIsComplete(bool $isComplete): self
     {
         $this->isComplete = $isComplete;
 
@@ -122,9 +101,9 @@ class PurchasePeriod
     /**
      * @param DateTime $dateCreated
      *
-     * @return PurchasePeriod
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): PurchasePeriod
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
@@ -142,9 +121,9 @@ class PurchasePeriod
     /**
      * @param DateTime $dateBegins
      *
-     * @return PurchasePeriod
+     * @return self
      */
-    public function setDateBegins(DateTime $dateBegins): PurchasePeriod
+    public function setDateBegins(DateTime $dateBegins): self
     {
         $this->dateBegins = $dateBegins;
 
@@ -162,9 +141,9 @@ class PurchasePeriod
     /**
      * @param DateTime $dateExpires
      *
-     * @return PurchasePeriod
+     * @return self
      */
-    public function setDateExpires(DateTime $dateExpires): PurchasePeriod
+    public function setDateExpires(DateTime $dateExpires): self
     {
         $this->dateExpires = $dateExpires;
 

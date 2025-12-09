@@ -6,14 +6,9 @@ use DateTime;
 use Exception;
 use InvalidArgumentException;
 
-/**
- * @ORM\Table(name="server_event",
- *  indexes={
- *      @ORM\Index(columns={"server_id", "event_type", "date_created"})
- *  }
- * )
- * @ORM\Entity(repositoryClass="App\Repository\ServerEventRepository")
- */
+#[ORM\Table(name: 'server_event')]
+#[ORM\Index(columns: ['server_id', 'event_type', 'date_created'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\ServerEventRepository')]
 class ServerEvent
 {
     const TYPE_JOIN = 0;
@@ -26,44 +21,27 @@ class ServerEvent
         self::TYPE_BUMP
     ];
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var Server
-     * @ORM\ManyToOne(targetEntity="Server")
-     * @ORM\JoinColumn(name="server_id", onDelete="CASCADE", referencedColumnName="id")
-     */
-    protected $server;
+    #[ORM\ManyToOne(targetEntity: Server::class)]
+    #[ORM\JoinColumn(name: 'server_id', onDelete: 'CASCADE', referencedColumnName: 'id')]
+    protected Server $server;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="user_id", onDelete="CASCADE", referencedColumnName="id", nullable=true)
-     */
-    protected $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', onDelete: 'CASCADE', referencedColumnName: 'id', nullable: true)]
+    protected ?User $user = null;
 
-    /**
-     * @var string|resource
-     * @ORM\Column(type="binary", length=16)
-     */
-    protected $ip;
+    #[ORM\Column(type: 'binary', length: 16)]
+    protected string|object $ip;
 
-    /**
-     * @var int
-     * @ORM\Column(type="smallint")
-     */
-    protected $eventType;
+    #[ORM\Column(type: 'smallint')]
+    protected int $eventType;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
     /**
      * Constructor
@@ -94,9 +72,9 @@ class ServerEvent
     /**
      * @param Server $server
      *
-     * @return ServerEvent
+     * @return self
      */
-    public function setServer(Server $server): ServerEvent
+    public function setServer(Server $server): self
     {
         $this->server = $server;
 
@@ -114,9 +92,9 @@ class ServerEvent
     /**
      * @param int $eventType
      *
-     * @return ServerEvent
+     * @return self
      */
-    public function setEventType(int $eventType): ServerEvent
+    public function setEventType(int $eventType): self
     {
         if (!in_array($eventType, self::TYPES)) {
             throw new InvalidArgumentException(
@@ -139,9 +117,9 @@ class ServerEvent
     /**
      * @param User $user
      *
-     * @return ServerEvent
+     * @return self
      */
-    public function setUser(User $user): ServerEvent
+    public function setUser(User $user): self
     {
         $this->user = $user;
 
@@ -168,9 +146,9 @@ class ServerEvent
     /**
      * @param resource|string $ip
      *
-     * @return ServerEvent
+     * @return self
      */
-    public function setIp($ip): ServerEvent
+    public function setIp($ip): self
     {
         $this->ip = $ip;
 
@@ -180,9 +158,9 @@ class ServerEvent
     /**
      * @param string $ipString
      *
-     * @return ServerEvent
+     * @return self
      */
-    public function setIpString($ipString): ServerEvent
+    public function setIpString($ipString): self
     {
         $this->ip = inet_pton($ipString);
 
@@ -200,9 +178,9 @@ class ServerEvent
     /**
      * @param DateTime $dateCreated
      *
-     * @return ServerEvent
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): ServerEvent
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 

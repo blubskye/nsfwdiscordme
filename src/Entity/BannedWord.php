@@ -6,35 +6,21 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
 
-/**
- * @ORM\Table(name="banned_word",
- *     uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"word"})
- *     }
- * )
- * @ORM\Entity(repositoryClass="App\Repository\BannedWordRepository")
- */
+#[ORM\Table(name: 'banned_word')]
+#[ORM\UniqueConstraint(columns: ['word'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\BannedWordRepository')]
 class BannedWord implements LoggableEntityInterface
 {
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=60, nullable=true)
-     */
-    protected $word;
+    #[ORM\Column(type: 'string', length: 60, nullable: true)]
+    protected ?string $word = null;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
     /**
      * Constructor
@@ -73,9 +59,9 @@ class BannedWord implements LoggableEntityInterface
     /**
      * @param string $word
      *
-     * @return BannedWord
+     * @return self
      */
-    public function setWord(string $word): BannedWord
+    public function setWord(string $word): self
     {
         $this->word = $word;
 
@@ -93,9 +79,9 @@ class BannedWord implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return BannedWord
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): BannedWord
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 

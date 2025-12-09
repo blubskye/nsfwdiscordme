@@ -3,30 +3,27 @@ namespace App\Controller;
 
 use App\Entity\ServerEvent;
 use App\Entity\Server;
-use App\Http\Request;
+use Symfony\Component\HttpFoundation\Request;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\Join;
 use Exception;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route(name="home_")
- */
+#[Route(name: 'home_')]
 class HomeController extends Controller
 {
     const CACHE_LIFETIME = 1800; // 30 minutes
 
     /**
-     * @Route("/", name="index")
-     *
      * @param Request $request
      *
      * @return Response
      */
-    public function indexAction(Request $request)
+    #[Route('/', name: 'index')]
+    public function indexAction(Request $request): Response
     {
         $emeraldServer = null;
         if ($request->query->getInt('page', 1) === 1) {
@@ -53,11 +50,10 @@ class HomeController extends Controller
     }
 
     /**
-     * @Route("/recently-bumped", name="recently_bumped")
-     *
      * @return Response
      */
-    public function recentlyBumpedAction()
+    #[Route('/recently-bumped', name: 'recently_bumped')]
+    public function recentlyBumpedAction(): Response
     {
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
@@ -78,11 +74,10 @@ class HomeController extends Controller
     }
 
     /**
-     * @Route("/recently-added", name="recently_added")
-     *
      * @return Response
      */
-    public function recentlyAddedAction()
+    #[Route('/recently-added', name: 'recently_added')]
+    public function recentlyAddedAction(): Response
     {
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
@@ -99,12 +94,11 @@ class HomeController extends Controller
     }
 
     /**
-     * @Route("/trending", name="trending")
-     *
      * @return Response
      * @throws Exception
      */
-    public function trendingAction()
+    #[Route('/trending', name: 'trending')]
+    public function trendingAction(): Response
     {
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
@@ -125,11 +119,10 @@ class HomeController extends Controller
     }
 
     /**
-     * @Route("/most-online", name="most_online")
-     *
      * @return Response
      */
-    public function mostOnlineAction()
+    #[Route('/most-online', name: 'most_online')]
+    public function mostOnlineAction(): Response
     {
         $query = $this->em->getRepository(Server::class)
             ->createQueryBuilder('s')
@@ -148,13 +141,12 @@ class HomeController extends Controller
     }
 
     /**
-     * @Route("/random", name="random")
-     *
      * @return Response
      * @throws DBALException
      * @throws NonUniqueResultException
      */
-    public function randomAction()
+    #[Route('/random', name: 'random')]
+    public function randomAction(): Response
     {
         // ORDER BY RAND() is bad, m'kay. This does the trick.
         $stmt = $this->em->getConnection()->prepare('
@@ -184,11 +176,10 @@ class HomeController extends Controller
     }
 
     /**
-     * @Route("/privacy", name="privacy")
-     *
      * @return Response
      */
-    public function privacyAction()
+    #[Route('/privacy', name: 'privacy')]
+    public function privacyAction(): Response
     {
         return $this->render('home/privacy.html.twig', [
             'title' => 'Privacy Policy'
@@ -196,11 +187,10 @@ class HomeController extends Controller
     }
 
     /**
-     * @Route("/terms", name="terms")
-     *
      * @return Response
      */
-    public function termsAction()
+    #[Route('/terms', name: 'terms')]
+    public function termsAction(): Response
     {
         return $this->render('home/terms.html.twig', [
             'Terms of Use'
@@ -208,11 +198,10 @@ class HomeController extends Controller
     }
 
     /**
-     * @Route("/source", name="source")
-     *
      * @return Response
      */
-    public function sourceAction()
+    #[Route('/source', name: 'source')]
+    public function sourceAction(): Response
     {
         return $this->render('home/source.html.twig', [
             'title' => 'Source Code'

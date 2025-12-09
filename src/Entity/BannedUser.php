@@ -6,47 +6,27 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
 
-/**
- * @ORM\Table(name="banned_user",
- *     uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"discord_username", "discord_discriminator"})
- *     }
- * )
- * @ORM\Entity(repositoryClass="App\Repository\BannedUserRepository")
- */
+#[ORM\Table(name: 'banned_user')]
+#[ORM\UniqueConstraint(columns: ['discord_username', 'discord_discriminator'])]
+#[ORM\Entity(repositoryClass: 'App\Repository\BannedUserRepository')]
 class BannedUser implements LoggableEntityInterface
 {
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=32, nullable=true)
-     */
-    protected $discordUsername;
+    #[ORM\Column(type: 'string', length: 32, nullable: true)]
+    protected ?string $discordUsername = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=4, nullable=true)
-     */
-    protected $discordDiscriminator;
+    #[ORM\Column(type: 'string', length: 4, nullable: true)]
+    protected ?string $discordDiscriminator = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    protected $reason;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $reason = null;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
     /**
      * Constructor
@@ -90,9 +70,9 @@ class BannedUser implements LoggableEntityInterface
     /**
      * @param string $discordUsername
      *
-     * @return BannedUser
+     * @return self
      */
-    public function setDiscordUsername(string $discordUsername): BannedUser
+    public function setDiscordUsername(string $discordUsername): self
     {
         $this->discordUsername = $discordUsername;
 
@@ -110,9 +90,9 @@ class BannedUser implements LoggableEntityInterface
     /**
      * @param string $discordDiscriminator
      *
-     * @return BannedUser
+     * @return self
      */
-    public function setDiscordDiscriminator(string $discordDiscriminator): BannedUser
+    public function setDiscordDiscriminator(string $discordDiscriminator): self
     {
         $this->discordDiscriminator = $discordDiscriminator;
 
@@ -130,9 +110,9 @@ class BannedUser implements LoggableEntityInterface
     /**
      * @param string $reason
      *
-     * @return BannedUser
+     * @return self
      */
-    public function setReason(string $reason): BannedUser
+    public function setReason(string $reason): self
     {
         $this->reason = $reason;
 
@@ -150,9 +130,9 @@ class BannedUser implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return BannedUser
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): BannedUser
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 

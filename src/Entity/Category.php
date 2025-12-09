@@ -7,43 +7,27 @@ use DateTime;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Exception;
 
-/**
- * @ORM\Table(name="category")
- * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
- */
+#[ORM\Table(name: 'category')]
+#[ORM\Entity(repositoryClass: 'App\Repository\CategoryRepository')]
 class Category implements LoggableEntityInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=100)
-     */
-    protected $name;
+    #[ORM\Column(type: 'string', length: 100)]
+    protected string $name;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=100)
-     */
-    protected $slug;
+    #[ORM\Column(type: 'string', length: 100)]
+    protected string $slug;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     * @Gedmo\Timestampable(on="update")
-     */
-    protected $dateUpdated;
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    protected DateTime $dateUpdated;
 
     /**
      * Constructor
@@ -91,9 +75,9 @@ class Category implements LoggableEntityInterface
     /**
      * @param string $name
      *
-     * @return Category
+     * @return self
      */
-    public function setName(string $name): Category
+    public function setName(string $name): self
     {
         $this->name = $name;
 
@@ -111,9 +95,9 @@ class Category implements LoggableEntityInterface
     /**
      * @param string $slug
      *
-     * @return Category
+     * @return self
      */
-    public function setSlug(string $slug): Category
+    public function setSlug(string $slug): self
     {
         $this->slug = $slug;
 
@@ -131,9 +115,9 @@ class Category implements LoggableEntityInterface
     /**
      * @param DateTime $dateCreated
      *
-     * @return Category
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): Category
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
@@ -151,9 +135,9 @@ class Category implements LoggableEntityInterface
     /**
      * @param DateTime $dateUpdated
      *
-     * @return Category
+     * @return self
      */
-    public function setDateUpdated(DateTime $dateUpdated): Category
+    public function setDateUpdated(DateTime $dateUpdated): self
     {
         $this->dateUpdated = $dateUpdated;
 

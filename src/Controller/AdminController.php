@@ -3,7 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Server;
 use App\Entity\ServerEvent;
-use App\Http\Request;
+use Symfony\Component\HttpFoundation\Request;
 use DateInterval;
 use DateTime;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\EasyAdminController;
@@ -15,11 +15,9 @@ use FOS\ElasticaBundle\Paginator\FantaPaginatorAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route("/admin")
- */
+#[Route('/admin')]
 class AdminController extends EasyAdminController
 {
     /**
@@ -57,14 +55,13 @@ class AdminController extends EasyAdminController
     }
 
     /**
-     * @Route("/stats", name="admin_stats")
-     *
      * @param Request $request
      *
      * @return Response
      * @throws Exception
      */
-    public function statsAction(Request $request)
+    #[Route('/stats', name: 'admin_stats')]
+    public function statsAction(Request $request): Response
     {
         if ($request->getMethod() === 'POST') {
             /** @var FantaPaginatorAdapter $adapter */
@@ -145,14 +142,13 @@ class AdminController extends EasyAdminController
     }
 
     /**
-     * @Route("/bumps", name="admin_bumps")
-     *
      * @param Request $request
      *
      * @return Response
      * @throws Exception
      */
-    public function bumpsAction(Request $request)
+    #[Route('/bumps', name: 'admin_bumps')]
+    public function bumpsAction(Request $request): Response
     {
         if ($request->getMethod() === 'POST') {
             switch($request->request->get('action')) {
@@ -174,7 +170,7 @@ class AdminController extends EasyAdminController
      *
      * @return Query
      */
-    private function createServerEventQuery($eventType)
+    private function createServerEventQuery($eventType): Query
     {
         $query = new Query();
         $query->setSize(0);
@@ -194,7 +190,7 @@ class AdminController extends EasyAdminController
      * @return array
      * @throws Exception
      */
-    private function generateStatsFromResults($results)
+    private function generateStatsFromResults($results): array
     {
         /** @var FantaPaginatorAdapter $adapter */
         $adapter = $results->getAdapter();
@@ -230,7 +226,7 @@ class AdminController extends EasyAdminController
     /**
      *
      */
-    private function resetBumpPoints()
+    private function resetBumpPoints(): void
     {
         $serverRepo = $this->getDoctrine()->getRepository(Server::class);
         foreach($serverRepo->findAll() as $server) {

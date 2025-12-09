@@ -5,45 +5,28 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
 
-/**
- * @ORM\Table(name="server_action")
- * @ORM\Entity(repositoryClass="App\Repository\ServerActionRepository")
- */
+#[ORM\Table(name: 'server_action')]
+#[ORM\Entity(repositoryClass: 'App\Repository\ServerActionRepository')]
 class ServerAction
 {
-    /**
-     * @var int
-     * @ORM\Id
-     * @ORM\Column(type="bigint", options={"unsigned"=true})
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'bigint', options: ['unsigned' => true])]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="user_id", onDelete="CASCADE", referencedColumnName="id", nullable=false)
-     */
-    protected $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', onDelete: 'CASCADE', referencedColumnName: 'id', nullable: false)]
+    protected User $user;
 
-    /**
-     * @var Server
-     * @ORM\ManyToOne(targetEntity="Server")
-     * @ORM\JoinColumn(name="server_id", onDelete="CASCADE", referencedColumnName="id", nullable=false)
-     */
-    protected $server;
+    #[ORM\ManyToOne(targetEntity: Server::class)]
+    #[ORM\JoinColumn(name: 'server_id', onDelete: 'CASCADE', referencedColumnName: 'id', nullable: false)]
+    protected Server $server;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255)
-     */
-    protected $action;
+    #[ORM\Column(type: 'string', length: 255)]
+    protected string $action;
 
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    protected DateTime $dateCreated;
 
     /**
      * Constructor
@@ -74,9 +57,9 @@ class ServerAction
     /**
      * @param User $user
      *
-     * @return ServerAction
+     * @return self
      */
-    public function setUser(User $user): ServerAction
+    public function setUser(User $user): self
     {
         $this->user = $user;
 
@@ -94,9 +77,9 @@ class ServerAction
     /**
      * @param Server $server
      *
-     * @return ServerAction
+     * @return self
      */
-    public function setServer(Server $server): ServerAction
+    public function setServer(Server $server): self
     {
         $this->server = $server;
 
@@ -114,9 +97,9 @@ class ServerAction
     /**
      * @param string $action
      *
-     * @return ServerAction
+     * @return self
      */
-    public function setAction(string $action): ServerAction
+    public function setAction(string $action): self
     {
         $this->action = $action;
 
@@ -134,9 +117,9 @@ class ServerAction
     /**
      * @param DateTime $dateCreated
      *
-     * @return ServerAction
+     * @return self
      */
-    public function setDateCreated(DateTime $dateCreated): ServerAction
+    public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
