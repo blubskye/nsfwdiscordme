@@ -1,5 +1,0 @@
-parameters:
-    cdns:
-        local: 'http://nsfwdiscordme.headzoo.io/cdn'
-        aws: ''
-    paymentBaseURL: 'https://yunogasai.site'

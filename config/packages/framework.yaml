@@ -1,11 +1,6 @@
-imports:
-    - { resource: version.yaml }
-
 framework:
     secret: '%env(APP_SECRET)%'
-    #default_locale: en
     csrf_protection: true
-    #http_method_override: true
 
     session:
         handler_id: App\Storage\Sessions\RedisSessionHandler
@@ -13,13 +8,13 @@ framework:
         cookie_samesite: lax
         cookie_lifetime: 604800
         gc_maxlifetime: 604800
+        storage_factory_id: session.storage.factory.native
 
     php_errors:
         log: true
 
-    templating:
-        engines: ['twig', 'php']
+    handle_all_throwables: true
 
-    assets:
-        version: '%git_commit%'
-        version_format: '%%s?version=%%s'
+    asset_mapper:
+        paths:
+            - assets/

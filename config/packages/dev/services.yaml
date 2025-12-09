@@ -1,5 +1,0 @@
-parameters:
-    cdns:
-        local: 'http://dev.nsfwdiscordme.com/cdn'
-        aws: ''
-    paymentBaseURL: 'http://dev.yunogasai.site'

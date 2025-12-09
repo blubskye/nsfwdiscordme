@@ -1,5 +1,5 @@
 security:
-    encoders:
+    password_hashers:
         App\Security\UserProvider: bcrypt
 
     role_hierarchy:
@@ -15,18 +15,18 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            pattern: ^/
+            lazy: true
+            provider: app_users
             form_login:
-                provider: app_users
-                csrf_token_generator: security.csrf.token_manager
-            logout:       true
-            anonymous:    true
+                enable_csrf: true
+            logout:
+                path: /logout
 
     access_control:
-        - { path: ^/profile,      role: IS_AUTHENTICATED_REMEMBERED }
-        - { path: ^/server,       role: IS_AUTHENTICATED_REMEMBERED }
-        - { path: ^/upgrade,      role: IS_AUTHENTICATED_REMEMBERED }
-        - { path: ^/api/bump/,    role: IS_AUTHENTICATED_REMEMBERED }
-        - { path: ^/api/server/,  role: IS_AUTHENTICATED_REMEMBERED }
-        - { path: ^/admin/login,  role: ROLE_ADMIN }
-        - { path: ^/admin/,       role: ROLE_SUPER_ADMIN }
+        - { path: ^/profile,      roles: IS_AUTHENTICATED_REMEMBERED }
+        - { path: ^/server,       roles: IS_AUTHENTICATED_REMEMBERED }
+        - { path: ^/upgrade,      roles: IS_AUTHENTICATED_REMEMBERED }
+        - { path: ^/api/bump/,    roles: IS_AUTHENTICATED_REMEMBERED }
+        - { path: ^/api/server/,  roles: IS_AUTHENTICATED_REMEMBERED }
+        - { path: ^/admin/login,  roles: ROLE_ADMIN }
+        - { path: ^/admin/,       roles: ROLE_SUPER_ADMIN }
