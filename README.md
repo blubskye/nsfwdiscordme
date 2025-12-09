@@ -5,6 +5,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg)](https://php.net)
 [![Symfony](https://img.shields.io/badge/Symfony-6.4%20LTS-000000.svg)](https://symfony.com)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933.svg)](https://nodejs.org)
 [![Discord API](https://img.shields.io/badge/Discord%20API-v10-5865F2.svg)](https://discord.com/developers/docs)
 
 A Discord server directory and listing platform built with Symfony. Allows server owners to list, manage, and promote their Discord communities.
@@ -31,21 +32,21 @@ A Discord server directory and listing platform built with Symfony. Allows serve
 | Component | Technology |
 |-----------|------------|
 | Backend | PHP 8.2+, Symfony 6.4 LTS |
-| Database | MySQL 5.7+ |
-| Cache | Redis 3+ |
-| Search | Elasticsearch 6+ |
-| Frontend | Webpack, Bootstrap 4, ES6 |
+| Database | MariaDB 10.6+ / MySQL 8.0+ |
+| Cache | Redis 7+ |
+| Search | Elasticsearch 8+ |
+| Frontend | Webpack 5, Bootstrap 5, ES6+ |
 | Discord | Discord API v10, DiscordPHP |
 
 ## Requirements
 
 - PHP 8.2 or higher
-- MySQL 5.7+
-- Redis 3+
-- Elasticsearch 6+
-- Nginx 1.10+
-- Node.js & Yarn
-- Composer
+- MariaDB 10.6+ or MySQL 8.0+
+- Redis 7+
+- Elasticsearch 8+
+- Nginx 1.18+
+- Node.js 22+
+- Composer 2.x
 
 ## Installation
 
@@ -56,12 +57,14 @@ A Discord server directory and listing platform built with Symfony. Allows serve
 git clone https://github.com/blubskye/nsfwdiscordme.git
 cd nsfwdiscordme
 
-# Install dependencies
+# Install PHP dependencies
 composer install
-yarn install
+
+# Install Node dependencies
+npm install
 
 # Build frontend assets
-yarn run build
+npm run build
 
 # Configure environment
 cp .env .env.local
@@ -82,8 +85,8 @@ bin/console doctrine:migrations:migrate
 
 | Variable | Description |
 |----------|-------------|
-| `DATABASE_URL` | MySQL connection string |
-| `REDIS_HOST` | Redis server hostname |
+| `DATABASE_URL` | MariaDB/MySQL connection string |
+| `REDIS_URL` | Redis connection URL |
 | `DISCORD_CLIENT_ID` | Discord OAuth2 application ID |
 | `DISCORD_CLIENT_SECRET` | Discord OAuth2 secret |
 | `DISCORD_BOT_TOKEN` | Bot token for invite creation |
