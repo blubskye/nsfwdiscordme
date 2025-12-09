@@ -3,8 +3,8 @@
 # NSFW Discord Directory
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-777BB4.svg)](https://php.net)
-[![Symfony](https://img.shields.io/badge/Symfony-4.2-000000.svg)](https://symfony.com)
+[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg)](https://php.net)
+[![Symfony](https://img.shields.io/badge/Symfony-6.4%20LTS-000000.svg)](https://symfony.com)
 [![Discord API](https://img.shields.io/badge/Discord%20API-v10-5865F2.svg)](https://discord.com/developers/docs)
 
 A Discord server directory and listing platform built with Symfony. Allows server owners to list, manage, and promote their Discord communities.
@@ -30,7 +30,7 @@ A Discord server directory and listing platform built with Symfony. Allows serve
 
 | Component | Technology |
 |-----------|------------|
-| Backend | PHP 8.1+, Symfony 4.2 |
+| Backend | PHP 8.2+, Symfony 6.4 LTS |
 | Database | MySQL 5.7+ |
 | Cache | Redis 3+ |
 | Search | Elasticsearch 6+ |
@@ -39,7 +39,7 @@ A Discord server directory and listing platform built with Symfony. Allows serve
 
 ## Requirements
 
-- PHP 8.1 or higher
+- PHP 8.2 or higher
 - MySQL 5.7+
 - Redis 3+
 - Elasticsearch 6+
