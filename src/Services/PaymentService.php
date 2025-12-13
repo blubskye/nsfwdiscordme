@@ -14,74 +14,36 @@ class PaymentService
 {
     use LoggerAwareTrait;
 
-    const TIMEOUT = 2.0;
+    public const TIMEOUT = 2.0;
 
-    /**
-     * @var string
-     */
-    protected $clientID;
+    protected string $baseURL;
 
-    /**
-     * @var string
-     */
-    protected $clientSecret;
-
-    /**
-     * @var string
-     */
-    protected $baseURL;
-
-    /**
-     * Constructor
-     *
-     * @param string $clientID
-     * @param string $clientSecret
-     * @param string $baseURL
-     */
-    public function __construct($clientID, $clientSecret, $baseURL = 'https://yunogasai.site')
-    {
-        $this->clientID     = $clientID;
-        $this->clientSecret = $clientSecret;
-        $this->baseURL      = rtrim($baseURL, '/');
+    public function __construct(
+        protected string $clientID,
+        protected string $clientSecret,
+        string $baseURL = 'https://yunogasai.site'
+    ) {
+        $this->baseURL = rtrim($baseURL, '/');
     }
 
-    /**
-     * @param string $path
-     *
-     * @return string
-     */
-    public function getURL($path)
+    public function getURL(string $path): string
     {
         return sprintf('%s/api/v1/%s', $this->baseURL, $path);
     }
 
-    /**
-     * @param string $token
-     *
-     * @return string
-     */
-    public function getPurchaseURL($token)
+    public function getPurchaseURL(string $token): string
     {
         return sprintf('%s/purchase/%s', $this->baseURL, $token);
     }
 
     /**
-     * @param array $values
-     *
-     * @return string
      * @throws Exception
      * @throws GuzzleException
      */
-    public function getToken(array $values)
+    public function getToken(array $values): string
     {
-        if (empty($values['transactionID'])
-            || empty($values['price'])
-            || empty($values['description'])
-            || empty($values['successURL'])
-            || empty($values['cancelURL'])
-            || empty($values['failureURL'])
-            || empty($values['webhookURL'])
-        ) {
+        $requiredKeys = ['transactionID', 'price', 'description', 'successURL', 'cancelURL', 'failureURL', 'webhookURL'];
+        if (!array_all($requiredKeys, fn(string $key): bool => !empty($values[$key]))) {
             throw new InvalidArgumentException('Missing values.');
         }
 
@@ -94,18 +56,17 @@ class PaymentService
     }
 
     /**
-     * @param string $token
-     * @param string $code
-     * @param string $price
-     * @param string $transactionID
-     *
-     * @return array
      * @throws Exception
      * @throws GuzzleException
      */
-    public function verify($token, $code, $price, $transactionID)
+    public function verify(string $token, string $code, string $price, string $transactionID): bool
     {
-        $body = compact('token', 'code', 'price', 'transactionID');
+        $body = [
+            'token' => $token,
+            'code' => $code,
+            'price' => $price,
+            'transactionID' => $transactionID,
+        ];
         $resp = $this->doRequest('POST', $this->getURL('verify'), $body);
         if (!isset($resp['valid'])) {
             throw new Exception('Invalid response.');
@@ -115,14 +76,9 @@ class PaymentService
     }
 
     /**
-     * @param string     $method
-     * @param string     $url
-     * @param array|null $body
-     *
-     * @return mixed
      * @throws GuzzleException
      */
-    protected function doRequest($method, $url, $body = null)
+    protected function doRequest(string $method, string $url, ?array $body = null): mixed
     {
         $headers = [
             'X-Client-ID'     => $this->clientID,
@@ -135,7 +91,7 @@ class PaymentService
             'body'    => json_encode($body)
         ];
 
-        $this->logger->debug($method . ': ' . $url, [$options]);
+        $this->logger->debug("{$method}: {$url}", [$options]);
 
         $client = new Guzzle([
             'timeout' => self::TIMEOUT

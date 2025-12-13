@@ -38,48 +38,34 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route(name: 'server_')]
 class ServerController extends Controller
 {
-    /**
-     * @var WebHandlerInterface
-     */
-    protected $webHandler;
+    protected WebHandlerInterface $webHandler;
 
-    /**
-     * @param WebHandlerInterface $webHandler
-     */
-    public function setWebHandler(WebHandlerInterface $webHandler)
+    public function setWebHandler(WebHandlerInterface $webHandler): void
     {
         $this->webHandler = $webHandler;
     }
 
     /**
-     * @param string  $slug
-     *
-     * @param Request $request
-     *
-     * @return Response
      * @throws Exception
      */
     #[Route('/{slug}', name: 'index')]
-    public function indexAction($slug, Request $request): Response
+    public function indexAction(string $slug, Request $request): Response
     {
         $server = $this->fetchServerOrThrow($slug);
 
-        $this->eventDispatcher->dispatch(AppEvents::SERVER_VIEW, new ViewEvent($server, $request));
+        $this->eventDispatcher->dispatch(new ViewEvent($server, $request), AppEvents::SERVER_VIEW);
 
         return $this->render('server/index.html.twig', [
             'server' => $server,
-            'title'  => $server->getName()
+            'title' => $server->getName()
         ]);
     }
 
     /**
-     * @param string $slug
-     *
-     * @return Response
      * @throws Exception
      */
     #[Route('/server/stats/{slug}', name: 'stats')]
-    public function statsAction($slug): Response
+    public function statsAction(string $slug): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_EDITOR)) {
@@ -118,24 +104,19 @@ class ServerController extends Controller
             ->getSingleScalarResult();
 
         return $this->render('server/stats.html.twig', [
-            'server'    => $server,
+            'server' => $server,
             'actionLog' => $actionLog,
             'joinCount' => $joinCount,
             'viewCount' => $viewCount,
-            'title'     => sprintf('Stats for %s', $server->getName())
+            'title' => sprintf('Stats for %s', $server->getName())
         ]);
     }
 
     /**
-     * @param string  $slug
-     *
-     * @param Request $request
-     *
-     * @return Response
      * @throws GuzzleException
      */
     #[Route('/server/team/{slug}', name: 'team', methods: ['GET', 'POST'])]
-    public function teamAction($slug, Request $request): Response
+    public function teamAction(string $slug, Request $request): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_MANAGER)) {
@@ -143,13 +124,13 @@ class ServerController extends Controller
         }
 
         $model = new ServerTeamMemberModel();
-        $form  = $this->createForm(ServerTeamMemberType::class, $model);
+        $form = $this->createForm(ServerTeamMemberType::class, $model);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $discordID     = null;
-            $username      = '';
+            $discordID = null;
+            $username = '';
             $discriminator = 0;
-            $avatarHash    = '';
+            $avatarHash = '';
             $modelUsername = $model->getUsername();
 
             if (is_numeric($modelUsername)) {
@@ -158,9 +139,9 @@ class ServerController extends Controller
                     if (!$user) {
                         throw new Exception();
                     }
-                    $discordID     = $user['id'];
-                    $username      = $user['username'];
-                    $avatarHash    = $user['avatar'];
+                    $discordID = $user['id'];
+                    $username = $user['username'];
+                    $avatarHash = $user['avatar'];
                     $discriminator = $user['discriminator'];
                 } catch (Exception $e) {
                     $form
@@ -205,8 +186,8 @@ class ServerController extends Controller
                     $this->addFlash('success', 'The user has been added to the server team');
 
                     $this->eventDispatcher->dispatch(
-                        'app.server.action',
-                        new ServerActionEvent($server, $user, 'Added team member.')
+                        new ServerActionEvent($server, $user, 'Added team member.'),
+                        'app.server.action'
                     );
 
                     return new RedirectResponse(
@@ -220,29 +201,22 @@ class ServerController extends Controller
             ->findByServer($server);
 
         return $this->render('server/team.html.twig', [
-            'server'      => $server,
-            'form'        => $form->createView(),
+            'server' => $server,
+            'form' => $form->createView(),
             'teamMembers' => $teamMembers,
-            'title'       => sprintf('Team %s', $server->getName())
+            'title' => sprintf('Team %s', $server->getName())
         ]);
     }
 
-    /**
-     * @param string  $slug
-     *
-     * @param Request $request
-     *
-     * @return Response
-     */
     #[Route('/server/team/{slug}', name: 'team_delete', methods: ['DELETE'], options: ['expose' => true])]
-    public function teamRemoveAction($slug, Request $request): Response
+    public function teamRemoveAction(string $slug, Request $request): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_OWNER)) {
             throw $this->createAccessDeniedException();
         }
 
-        $teamMember = $this->getDoctrine()->getRepository(ServerTeamMember::class)
+        $teamMember = $this->em->getRepository(ServerTeamMember::class)
             ->findByServerAndID($server, $request->request->get('teamMemberID'));
         if (!$teamMember) {
             throw $this->createNotFoundException();
@@ -255,26 +229,22 @@ class ServerController extends Controller
     }
 
     /**
-     * @param string  $slug
-     * @param Request $request
-     *
-     * @return Response
      * @throws FileNotFoundException
      * @throws GuzzleException
      */
     #[Route('/server/settings/{slug}', name: 'settings')]
-    public function settingsAction($slug, Request $request): Response
+    public function settingsAction(string $slug, Request $request): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_MANAGER)) {
             throw $this->createAccessDeniedException();
         }
 
-        $user      = $this->getUser();
-        $slug      = $server->getSlug();
+        $user = $this->getUser();
+        $slug = $server->getSlug();
         $discordID = $server->getDiscordID();
-        $form      = $this->createForm(ServerType::class, $server, [
-            'user'      => $user,
+        $form = $this->createForm(ServerType::class, $server, [
+            'user' => $user,
             'isEditing' => true
         ]);
 
@@ -291,8 +261,8 @@ class ServerController extends Controller
                 $this->addFlash('success', 'The server has been updated.');
 
                 $this->eventDispatcher->dispatch(
-                    'app.server.action',
-                    new ServerActionEvent($server, $user, 'Changed settings.')
+                    new ServerActionEvent($server, $user, 'Changed settings.'),
+                    'app.server.action'
                 );
 
                 return new RedirectResponse($this->generateUrl('profile_index'));
@@ -304,18 +274,15 @@ class ServerController extends Controller
         return $this->render(
             'server/settings.html.twig',
             [
-                'form'      => $form->createView(),
-                'server'    => $server,
+                'form' => $form->createView(),
+                'server' => $server,
                 'isEditing' => true,
-                'title'     => sprintf('Settings for %s', $server->getName())
+                'title' => sprintf('Settings for %s', $server->getName())
             ]
         );
     }
 
     /**
-     * @param Request $request
-     *
-     * @return Response
      * @throws FileNotFoundException
      * @throws GuzzleException
      * @throws DiscordRateLimitException
@@ -323,9 +290,9 @@ class ServerController extends Controller
     #[Route('/server/add', name: 'add', options: ['expose' => true])]
     public function addAction(Request $request): Response
     {
-        $user   = $this->getUser();
+        $user = $this->getUser();
         $server = new Server();
-        $form   = $this->createForm(ServerType::class, $server, [
+        $form = $this->createForm(ServerType::class, $server, [
             'user' => $user
         ]);
 
@@ -349,8 +316,8 @@ class ServerController extends Controller
                 $this->addFlash('success', 'The server has been added.');
 
                 $this->eventDispatcher->dispatch(
-                    'app.server.action',
-                    new ServerActionEvent($server, $user, 'Created server.')
+                    new ServerActionEvent($server, $user, 'Created server.'),
+                    'app.server.action'
                 );
 
                 return new RedirectResponse($this->generateUrl('profile_index'));
@@ -362,28 +329,24 @@ class ServerController extends Controller
         return $this->render(
             'server/add.html.twig',
             [
-                'form'      => $form->createView(),
+                'form' => $form->createView(),
                 'isEditing' => false,
-                'title'     => 'Add Server'
+                'title' => 'Add Server'
             ]
         );
     }
 
     /**
-     * @param FormInterface $form
-     * @param bool          $isEditing
-     *
-     * @return bool
      * @throws FileNotFoundException
      * @throws Exception
      * @throws GuzzleException
      */
-    private function processForm(FormInterface $form, $isEditing): bool
+    private function processForm(FormInterface $form, bool $isEditing): bool
     {
         /** @var Server $server */
-        $server   = $form->getData();
-        $repo     = $this->getDoctrine()->getRepository(Server::class);
-        $isValid  = true;
+        $server = $form->getData();
+        $repo = $this->em->getRepository(Server::class);
+        $isValid = true;
 
         if ($this->em->getRepository(BannedServer::class)->isBanned($server->getDiscordID())) {
             $form
@@ -393,7 +356,7 @@ class ServerController extends Controller
         }
 
         $foundCats = [];
-        foreach($server->getCategories() as $category) {
+        foreach ($server->getCategories() as $category) {
             if ($category->getId() && in_array($category->getId(), $foundCats)) {
                 $form
                     ->get('category2')
@@ -404,7 +367,7 @@ class ServerController extends Controller
         }
 
         $foundTags = [];
-        foreach($server->getTags() as $tag) {
+        foreach ($server->getTags() as $tag) {
             if ($tag->getId() && in_array($tag->getId(), $foundTags)) {
                 $form
                     ->get('tags')
@@ -415,7 +378,7 @@ class ServerController extends Controller
         }
 
         $bannedWordRepo = $this->em->getRepository(BannedWord::class);
-        foreach($server->getTags() as $tag) {
+        foreach ($server->getTags() as $tag) {
             if ($bannedWordRepo->containsBannedWords($tag->getName())) {
                 $form
                     ->get('tags')
@@ -453,7 +416,7 @@ class ServerController extends Controller
 
             try {
                 $this->discord->fetchWidget($server->getDiscordID());
-            } catch(Exception $e) {
+            } catch (Exception $e) {
                 $isValid = false;
                 $this->addFlash('danger', 'Widget not enabled.');
             }
@@ -493,12 +456,12 @@ class ServerController extends Controller
             }
         }
 
-        $iconMedia   = null;
+        $iconMedia = null;
         $bannerMedia = null;
         try {
-            $guild  = null;
+            $guild = null;
             $guilds = $this->discord->fetchMeGuilds($this->getUser()->getDiscordAccessToken());
-            foreach($guilds as $g) {
+            foreach ($guilds as $g) {
                 if ($g['id'] == $server->getDiscordID()) {
                     $guild = $g;
                     break;
@@ -522,7 +485,7 @@ class ServerController extends Controller
                 }
             }
 
-            if ($bannerFile  = $form['bannerFile']->getData()) {
+            if ($bannerFile = $form['bannerFile']->getData()) {
                 $bannerCropData = $form['bannerCropData']->getData();
                 if ($bannerCropData) {
                     $bannerCropData = json_decode($bannerCropData, true);
@@ -552,8 +515,6 @@ class ServerController extends Controller
 
     /**
      * Returns all the site paths which might conflict with server slugs
-     *
-     * @return array
      */
     private function getForbiddenSlugs(): array
     {
@@ -561,7 +522,7 @@ class ServerController extends Controller
             'admin'
         ];
 
-        foreach ($this->get('router')->getRouteCollection()->all() as $route) {
+        foreach ($this->getRouterCollection() as $route) {
             $path = $route->getPath();
             $path = array_filter(explode('/', $path));
             $path = array_shift($path);
@@ -574,17 +535,12 @@ class ServerController extends Controller
     }
 
     /**
-     * @param UploadedFile $file
-     * @param array        $cropData
-     * @param Server       $server
-     *
-     * @return Media
      * @throws Exception
      * @throws FileExistsException
      * @throws FileNotFoundException
      * @throws WriteException
      */
-    private function moveBannerFile(UploadedFile $file, $cropData, Server $server): ?Media
+    private function moveBannerFile(UploadedFile $file, ?array $cropData, Server $server): ?Media
     {
         if ($file->getError() !== 0) {
             return null;
@@ -592,10 +548,10 @@ class ServerController extends Controller
 
         $mimeTypes = [
             'image/jpeg' => 'jpg',
-            'image/jpg'  => 'jpg',
-            'image/png'  => 'png'
+            'image/jpg' => 'jpg',
+            'image/png' => 'png'
         ];
-        $mimeType  = $file->getMimeType();
+        $mimeType = $file->getMimeType();
         if (!in_array($mimeType, array_keys($mimeTypes))) {
             return null;
         }
@@ -607,7 +563,7 @@ class ServerController extends Controller
         }
 
         $paths = new Paths();
-        $path  = $paths->getPathByType(
+        $path = $paths->getPathByType(
             'banner',
             $server->getDiscordID(),
             $this->snowflakeGenerator->generate(),
@@ -618,18 +574,14 @@ class ServerController extends Controller
     }
 
     /**
-     * @param string $filename
-     * @param Server $server
-     *
-     * @return Media
      * @throws FileExistsException
      * @throws FileNotFoundException
      * @throws WriteException
      */
-    private function moveIconFile($filename, Server $server): Media
+    private function moveIconFile(string $filename, Server $server): Media
     {
         $paths = new Paths();
-        $path  = $paths->getPathByType(
+        $path = $paths->getPathByType(
             'icon',
             $server->getDiscordID(),
             $this->snowflakeGenerator->generate(),
@@ -640,9 +592,6 @@ class ServerController extends Controller
     }
 
     /**
-     * @param Media $media
-     *
-     * @return bool
      * @throws FileNotFoundException
      */
     private function deleteUploadedFile(Media $media): bool

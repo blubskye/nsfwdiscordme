@@ -8,41 +8,16 @@ use RuntimeException;
  */
 class Paths
 {
-    /**
-     * @param string     $type      Either "banner" or "icon"
-     * @param int|string $serverID  ID of the discord server
-     * @param int|string $snowflake Snowflake for the file
-     * @param string     $extension The file extension
-     *
-     * @return string
-     */
-    public function getPathByType($type, $serverID, $snowflake, $extension)
+    public function getPathByType(string $type, int|string $serverID, int|string $snowflake, string $extension): string
     {
-        switch($type) {
-            case 'banner':
-                return $this->getBannerPath($serverID, $snowflake, $extension);
-                break;
-            case 'icon':
-                return $this->getIconPath($serverID, $snowflake, $extension);
-                break;
-            default:
-                throw new RuntimeException(
-                    "Invalid file type ${type}."
-                );
-                break;
-        }
+        return match ($type) {
+            'banner' => $this->getBannerPath($serverID, $snowflake, $extension),
+            'icon' => $this->getIconPath($serverID, $snowflake, $extension),
+            default => throw new RuntimeException("Invalid file type {$type}."),
+        };
     }
 
-    /**
-     * Generates a path to save an icon image
-     *
-     * @param int|string $serverID
-     * @param int|string $snowflake
-     * @param string     $extension
-     *
-     * @return string
-     */
-    public function getIconPath($serverID, $snowflake, $extension)
+    public function getIconPath(int|string $serverID, int|string $snowflake, string $extension): string
     {
         return sprintf(
             'icons/%s/%s.%s',
@@ -52,16 +27,7 @@ class Paths
         );
     }
 
-    /**
-     * Generates a path to save an banner image
-     *
-     * @param int|string $serverID
-     * @param int|string $snowflake
-     * @param string     $extension
-     *
-     * @return string
-     */
-    public function getBannerPath($serverID, $snowflake, $extension)
+    public function getBannerPath(int|string $serverID, int|string $snowflake, string $extension): string
     {
         return sprintf(
             'banners/%s/%s.%s',

@@ -8,59 +8,32 @@ use App\Repository\ServerRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * Class ServerUpgradesCommand
- */
+#[AsCommand(
+    name: 'app:server:upgrades',
+    description: 'Process premium subscription upgrades and expirations'
+)]
 class ServerUpgradesCommand extends Command
 {
-    /**
-     * @var string
-     */
-    protected static $defaultName = 'app:server:upgrades';
+    private PurchasePeriodRepository $periodRepo;
+    private ServerRepository $serverRepo;
 
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $em;
-
-    /**
-     * @var PurchasePeriodRepository
-     */
-    protected $periodRepo;
-
-    /**
-     * @var ServerRepository
-     */
-    protected $serverRepo;
-
-    /**
-     * Constructor
-     *
-     * @param EntityManagerInterface $em
-     */
-    public function __construct(EntityManagerInterface $em)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em
+    ) {
         parent::__construct();
 
-        $this->em         = $em;
         $this->periodRepo = $em->getRepository(PurchasePeriod::class);
         $this->serverRepo = $em->getRepository(Server::class);
     }
 
-    /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return int|void|null
-     * @throws Exception
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        foreach($this->periodRepo->findExpired() as $purchasePeriod) {
+        foreach ($this->periodRepo->findExpired() as $purchasePeriod) {
             $server = $purchasePeriod->getPurchase()->getServer();
             if ($server->getPremiumStatus() !== Server::STATUS_STANDARD) {
                 $output->writeln(
@@ -72,7 +45,7 @@ class ServerUpgradesCommand extends Command
 
         $this->em->flush();
 
-        foreach($this->periodRepo->findReady() as $purchasePeriod) {
+        foreach ($this->periodRepo->findReady() as $purchasePeriod) {
             $server = $purchasePeriod->getPurchase()->getServer();
             if ($server->getPremiumStatus() === Server::STATUS_STANDARD) {
                 $output->writeln(
@@ -85,32 +58,26 @@ class ServerUpgradesCommand extends Command
         $this->em->flush();
 
         $output->writeln('Done!');
+
+        return Command::SUCCESS;
     }
 
-    /**
-     * @param PurchasePeriod $purchasePeriod
-     */
-    private function expire(PurchasePeriod $purchasePeriod)
+    private function expire(PurchasePeriod $purchasePeriod): void
     {
         $server = $purchasePeriod->getPurchase()->getServer();
         $server->setPremiumStatus(Server::STATUS_STANDARD);
         $purchasePeriod->setIsComplete(true);
     }
 
-    /**
-     * @param PurchasePeriod $purchasePeriod
-     *
-     * @throws Exception
-     */
-    private function upgrade(PurchasePeriod $purchasePeriod)
+    private function upgrade(PurchasePeriod $purchasePeriod): void
     {
         $purchase = $purchasePeriod->getPurchase();
-        $server   = $purchasePeriod->getPurchase()->getServer();
+        $server = $purchasePeriod->getPurchase()->getServer();
         $server->setPremiumStatus($purchase->getPremiumStatus());
 
         $period = $purchase->getPeriod();
         $purchasePeriod
             ->setDateBegins(new DateTime())
-            ->setDateExpires(new DateTime("${period} days"));
+            ->setDateExpires(new DateTime("{$period} days"));
     }
 }

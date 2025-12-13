@@ -1,6 +1,7 @@
 <?php
 namespace App\Entity;
 
+use App\Enum\ServerEventType;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
@@ -14,11 +15,11 @@ use InvalidArgumentException;
 #[ORM\Entity(repositoryClass: 'App\Repository\ServerEventRepository')]
 class ServerEvent
 {
-    const TYPE_JOIN = 0;
-    const TYPE_VIEW = 1;
-    const TYPE_BUMP = 2;
-
-    const TYPES = [
+    // Keep constants for backward compatibility
+    public const TYPE_JOIN = 0;
+    public const TYPE_VIEW = 1;
+    public const TYPE_BUMP = 2;
+    public const TYPES = [
         self::TYPE_JOIN,
         self::TYPE_VIEW,
         self::TYPE_BUMP
@@ -47,8 +48,6 @@ class ServerEvent
     protected DateTime $dateCreated;
 
     /**
-     * Constructor
-     *
      * @throws Exception
      */
     public function __construct()
@@ -56,27 +55,16 @@ class ServerEvent
         $this->dateCreated = new DateTime();
     }
 
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return Server
-     */
     public function getServer(): Server
     {
         return $this->server;
     }
 
-    /**
-     * @param Server $server
-     *
-     * @return self
-     */
     public function setServer(Server $server): self
     {
         $this->server = $server;
@@ -84,44 +72,33 @@ class ServerEvent
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getEventType(): int
     {
         return $this->eventType;
     }
 
-    /**
-     * @param int $eventType
-     *
-     * @return self
-     */
-    public function setEventType(int $eventType): self
+    public function getEventTypeEnum(): ServerEventType
     {
-        if (!in_array($eventType, self::TYPES)) {
-            throw new InvalidArgumentException(
-                "Invalid event type ${eventType}."
-            );
+        return ServerEventType::from($this->eventType);
+    }
+
+    public function setEventType(int|ServerEventType $eventType): self
+    {
+        $value = $eventType instanceof ServerEventType ? $eventType->value : $eventType;
+
+        if (!array_any(ServerEventType::values(), fn($t) => $t === $value)) {
+            throw new InvalidArgumentException("Invalid event type {$value}.");
         }
-        $this->eventType = $eventType;
+        $this->eventType = $value;
 
         return $this;
     }
 
-    /**
-     * @return User|null
-     */
     public function getUser(): ?User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     *
-     * @return self
-     */
     public function setUser(User $user): self
     {
         $this->user = $user;
@@ -129,60 +106,36 @@ class ServerEvent
         return $this;
     }
 
-    /**
-     * @return resource|string
-     */
-    public function getIp()
+    public function getIp(): string|object
     {
         return $this->ip;
     }
 
-    /**
-     * @return string
-     */
     public function getIpString(): string
     {
         rewind($this->ip);
         return inet_ntop(stream_get_contents($this->ip));
     }
 
-    /**
-     * @param resource|string $ip
-     *
-     * @return self
-     */
-    public function setIp($ip): self
+    public function setIp(string|object $ip): self
     {
         $this->ip = $ip;
 
         return $this;
     }
 
-    /**
-     * @param string $ipString
-     *
-     * @return self
-     */
-    public function setIpString($ipString): self
+    public function setIpString(string $ipString): self
     {
         $this->ip = inet_pton($ipString);
 
         return $this;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDateCreated(): DateTime
     {
         return $this->dateCreated;
     }
 
-    /**
-     * @param DateTime $dateCreated
-     *
-     * @return self
-     */
     public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;

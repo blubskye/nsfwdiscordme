@@ -35,34 +35,17 @@ class ApiController extends Controller
 {
     const NONCE_RECAPTCHA = 'recaptcha';
 
-    /**
-     * @var NonceStorageInterface
-     */
-    protected $nonceStorage;
+    protected NonceStorageInterface $nonceStorage;
+    protected PaginatedFinderInterface $eventsFinder;
 
-    /**
-     * @var PaginatedFinderInterface
-     */
-    protected $eventsFinder;
-
-    /**
-     * @param NonceStorageInterface $nonceStorage
-     *
-     * @return $this
-     */
-    public function setNonceStorage(NonceStorageInterface $nonceStorage)
+    public function setNonceStorage(NonceStorageInterface $nonceStorage): static
     {
         $this->nonceStorage = $nonceStorage;
 
         return $this;
     }
 
-    /**
-     * @param PaginatedFinderInterface $eventsFinder
-     *
-     * @return $this
-     */
-    public function setEventsFinder(PaginatedFinderInterface $eventsFinder)
+    public function setEventsFinder(PaginatedFinderInterface $eventsFinder): static
     {
         $this->eventsFinder = $eventsFinder;
 
@@ -72,13 +55,10 @@ class ApiController extends Controller
     /**
      * Returns the widget for the given server
      *
-     * @param string $serverID
-     *
-     * @return Response
      * @throws GuzzleException
      */
     #[Route('/widget/{serverID}', name: 'widget')]
-    public function widgetAction($serverID): Response
+    public function widgetAction(string $serverID): Response
     {
         try {
             $resp = $this->discord->fetchWidget($serverID);
@@ -94,10 +74,6 @@ class ApiController extends Controller
      *
      * The POST data contains an array of server IDs to bump. Returns information
      * on which servers were bumped.
-     *
-     * @param Request $request
-     *
-     * @return JsonResponse
      */
     #[Route('/bump/multi', name: 'bump_multi', methods: ['POST'])]
     public function bumpMultiAction(Request $request): JsonResponse
@@ -105,8 +81,8 @@ class ApiController extends Controller
         $this->validateNonceOrThrow(self::NONCE_RECAPTCHA, 'bump-ready');
 
         $bumped = [];
-        $repo   = $this->em->getRepository(Server::class);
-        foreach($request->request->get('servers') as $serverID) {
+        $repo = $this->em->getRepository(Server::class);
+        foreach ($request->request->all('servers') as $serverID) {
             $server = $repo->findByDiscordID($serverID);
             if ($server && $server->isBumpReady() && $this->hasServerAccess($server, self::SERVER_ROLE_EDITOR)) {
                 $bumped[$serverID] = $this->bumpServer($server, $request);
@@ -115,20 +91,15 @@ class ApiController extends Controller
 
         return new JsonResponse([
             'message' => 'ok',
-            'bumped'  => $bumped
+            'bumped' => $bumped
         ]);
     }
 
     /**
      * Bumps a single server and returns information on the bump
-     *
-     * @param Request $request
-     * @param int     $serverID
-     *
-     * @return JsonResponse
      */
     #[Route('/bump/{serverID}', name: 'bump', methods: ['POST'])]
-    public function bumpAction(Request $request, $serverID): JsonResponse
+    public function bumpAction(Request $request, string $serverID): JsonResponse
     {
         $this->validateNonceOrThrow(self::NONCE_RECAPTCHA, $serverID);
 
@@ -149,26 +120,21 @@ class ApiController extends Controller
     /**
      * Returns whether the server is ready for a bump
      *
-     * @param string $serverID
-     *
-     * @return JsonResponse
      * @throws Exception
      */
     #[Route('/bump/ready/{serverID}', name: 'bump_server_ready')]
-    public function bumpServerReadyAction($serverID): JsonResponse
+    public function bumpServerReadyAction(string $serverID): JsonResponse
     {
         $server = $this->findServerOrThrow($serverID, self::SERVER_ROLE_EDITOR);
 
         return new JsonResponse([
             'message' => 'ok',
-            'ready'   => $server->isBumpReady()
+            'ready' => $server->isBumpReady()
         ]);
     }
 
     /**
      * Returns a list of servers for which the authenticated user is a team member which are ready to bump
-     *
-     * @return JsonResponse
      */
     #[Route('/bump/ready', name: 'bump_ready')]
     public function bumpReadyAction(): JsonResponse
@@ -177,7 +143,7 @@ class ApiController extends Controller
             ->findByTeamMemberUser($this->getUser());
 
         $ready = [];
-        foreach($servers as $server) {
+        foreach ($servers as $server) {
             if ($this->hasServerAccess($server, self::SERVER_ROLE_EDITOR) && $server->isBumpReady()) {
                 $ready[] = $server->getDiscordID();
             }
@@ -185,17 +151,13 @@ class ApiController extends Controller
 
         return new JsonResponse([
             'message' => 'ok',
-            'ready'   => $ready
+            'ready' => $ready
         ]);
     }
 
     /**
      * Verifies a recaptcha token with google
      *
-     * @param Request          $request
-     * @param RecaptchaService $recaptchaService
-     *
-     * @return JsonResponse
      * @throws GuzzleException
      */
     #[Route('/recaptcha/verify', name: 'recaptcha_verify', methods: ['POST'])]
@@ -225,20 +187,16 @@ class ApiController extends Controller
     /**
      * Joins a server
      *
-     * @param string  $serverID
-     * @param Request $request
-     *
-     * @return JsonResponse
      * @throws GuzzleException
      */
     #[Route('/join/{serverID}', name: 'join', methods: ['POST'])]
-    public function joinAction($serverID, Request $request): JsonResponse
+    public function joinAction(string $serverID, Request $request): JsonResponse
     {
         $password = trim($request->request->get('password'));
-        $server   = $this->findServerOrThrow($serverID);
+        $server = $this->findServerOrThrow($serverID);
 
         // Ensures the user did the recaptcha if it's required.
-        if ($server->isBotHumanCheck() && !$this->nonceStorage->valid(self::NONCE_RECAPTCHA, "join-${serverID}")) {
+        if ($server->isBotHumanCheck() && !$this->nonceStorage->valid(self::NONCE_RECAPTCHA, "join-{$serverID}")) {
             return new JsonResponse([
                 'message' => 'recaptcha'
             ]);
@@ -265,10 +223,10 @@ class ApiController extends Controller
             ], 500);
         }
 
-        $this->eventDispatcher->dispatch(AppEvents::SERVER_JOIN, new JoinEvent($server, $request));
+        $this->eventDispatcher->dispatch(new JoinEvent($server, $request), AppEvents::SERVER_JOIN);
 
         return new JsonResponse([
-            'message'  => 'ok',
+            'message' => 'ok',
             'redirect' => $redirect
         ]);
     }
@@ -276,17 +234,14 @@ class ApiController extends Controller
     /**
      * Returns a list of channels for the given server
      *
-     * @param string $serverID
-     *
-     * @return JsonResponse
      * @throws GuzzleException
      * @throws DiscordRateLimitException
      */
     #[Route('/server/{serverID}/channels', name: 'server_channels')]
-    public function serverChannelsAction($serverID): JsonResponse
+    public function serverChannelsAction(string $serverID): JsonResponse
     {
         return new JsonResponse([
-            'message'  => 'ok',
+            'message' => 'ok',
             'channels' => $this->discord->fetchGuildChannels($serverID)
         ]);
     }
@@ -294,49 +249,41 @@ class ApiController extends Controller
     /**
      * Returns the views & joins stats for a server
      *
-     * @param string $serverID
-     *
-     * @return JsonResponse
      * @throws Exception
      */
     #[Route('/server/{serverID}/stats', name: 'server_stats')]
-    public function serverStatsAction($serverID): JsonResponse
+    public function serverStatsAction(string $serverID): JsonResponse
     {
         $server = $this->findServerOrThrow($serverID, self::SERVER_ROLE_EDITOR);
 
         /** @var FantaPaginatorAdapter $adapter */
-        $query   = $this->createServerEventQuery($server, ServerEvent::TYPE_JOIN);
+        $query = $this->createServerEventQuery($server, ServerEvent::TYPE_JOIN);
         $results = $this->eventsFinder->findPaginated($query);
         $adapter = $results->getAdapter();
         $buckets = $adapter->getAggregations()['hits']['buckets'];
-        $joins   = $this->generateStatsFromBuckets($buckets);
+        $joins = $this->generateStatsFromBuckets($buckets);
 
-        $query   = $this->createServerEventQuery($server, ServerEvent::TYPE_VIEW);
+        $query = $this->createServerEventQuery($server, ServerEvent::TYPE_VIEW);
         $results = $this->eventsFinder->findPaginated($query);
         $adapter = $results->getAdapter();
         $buckets = $adapter->getAggregations()['hits']['buckets'];
-        $views   = $this->generateStatsFromBuckets($buckets);
+        $views = $this->generateStatsFromBuckets($buckets);
 
         return new JsonResponse([
             'message' => 'ok',
-            'joins'   => $joins,
-            'views'   => $views
+            'joins' => $joins,
+            'views' => $views
         ]);
     }
 
     /**
      * Deletes a server
-     *
-     * @param string              $serverID
-     * @param WebHandlerInterface $webHandler
-     *
-     * @return JsonResponse
      */
     #[Route('/server/{serverID}/delete', name: 'server_delete', methods: ['POST'])]
-    public function serverDeleteAction($serverID, WebHandlerInterface $webHandler): JsonResponse
+    public function serverDeleteAction(string $serverID, WebHandlerInterface $webHandler): JsonResponse
     {
         $server = $this->findServerOrThrow($serverID, self::SERVER_ROLE_MANAGER);
-        foreach($server->getTeamMembers() as $teamMember) {
+        foreach ($server->getTeamMembers() as $teamMember) {
             $this->em->remove($teamMember);
         }
         $this->em->remove($server);
@@ -346,7 +293,7 @@ class ApiController extends Controller
         $this->em->flush();
 
         try {
-            $iconMedia   = $server->getIconMedia();
+            $iconMedia = $server->getIconMedia();
             $bannerMedia = $server->getBannerMedia();
             if ($iconMedia) {
                 $webHandler->getAdapter()->remove($iconMedia->getPath());
@@ -369,14 +316,9 @@ class ApiController extends Controller
 
     /**
      * Adds the POSTed message to session flash storage
-     *
-     * @param string $type
-     * @param Request $request
-     *
-     * @return JsonResponse
      */
     #[Route('/flash/{type}', name: 'flash', methods: ['POST'])]
-    public function flashAction($type, Request $request): JsonResponse
+    public function flashAction(string $type, Request $request): JsonResponse
     {
         $message = $request->request->get('message');
         if (!$message || !in_array($type, ['success', 'danger'])) {
@@ -395,13 +337,8 @@ class ApiController extends Controller
      *
      * When given a role, throws a access denied exception when the authenticated user
      * does not have that role on the server.
-     *
-     * @param string $serverID
-     * @param string $role
-     *
-     * @return Server
      */
-    private function findServerOrThrow($serverID, $role = ''): Server
+    private function findServerOrThrow(string $serverID, string $role = ''): Server
     {
         $server = $this->em->getRepository(Server::class)->findByDiscordID($serverID);
         if (!$server) {
@@ -414,12 +351,6 @@ class ApiController extends Controller
         return $server;
     }
 
-    /**
-     * @param Server  $server
-     * @param Request $request
-     *
-     * @return array
-     */
     private function bumpServer(Server $server, Request $request): array
     {
         try {
@@ -432,39 +363,29 @@ class ApiController extends Controller
         $this->em->flush();
         $user = $this->getUser();
         $this->eventDispatcher->dispatch(
-            AppEvents::SERVER_BUMP,
-            new BumpEvent($server, $user, $request)
+            new BumpEvent($server, $user, $request),
+            AppEvents::SERVER_BUMP
         );
         $this->eventDispatcher->dispatch(
-            AppEvents::SERVER_ACTION,
-            new ServerActionEvent($server, $user, 'Bumped server.')
+            new ServerActionEvent($server, $user, 'Bumped server.'),
+            AppEvents::SERVER_ACTION
         );
 
         return [
             'bumpPoints' => $server->getBumpPoints(),
-            'bumpUser'   => $user->getDiscordUsername() . '#' . $user->getDiscordDiscriminator(),
-            'nextBump'   => Server::BUMP_PERIOD_SECONDS
+            'bumpUser' => $user->getDiscordUsername() . '#' . $user->getDiscordDiscriminator(),
+            'nextBump' => Server::BUMP_PERIOD_SECONDS
         ];
     }
 
-    /**
-     * @param string $key
-     * @param string $value
-     */
-    private function validateNonceOrThrow($key, $value): void
+    private function validateNonceOrThrow(string $key, string $value): void
     {
         if (!$this->nonceStorage->valid($key, $value)) {
             throw $this->createAccessDeniedException();
         }
     }
 
-    /**
-     * @param Server $server
-     * @param int    $eventType
-     *
-     * @return Query
-     */
-    private function createServerEventQuery(Server $server, $eventType): Query
+    private function createServerEventQuery(Server $server, int $eventType): Query
     {
         /** @var FantaPaginatorAdapter $adapter */
         $query = new Query();
@@ -484,32 +405,29 @@ class ApiController extends Controller
     }
 
     /**
-     * @param array $buckets
-     *
-     * @return array
      * @throws Exception
      */
     private function generateStatsFromBuckets(array $buckets): array
     {
         $rows = [];
-        foreach($buckets as $bucket) {
+        foreach ($buckets as $bucket) {
             $day = (new DateTime($bucket['key_as_string']))->format('Y-m-d');
             $rows[$day] = $bucket['doc_count'];
         }
 
         $final = [];
-        $now   = new DateTime('30 days ago');
-        $int   = new DateInterval('P1D');
-        for($i = 30; $i > 0; $i--) {
+        $now = new DateTime('30 days ago');
+        $int = new DateInterval('P1D');
+        for ($i = 30; $i > 0; $i--) {
             $day = $now->add($int)->format('Y-m-d');
             if (isset($rows[$day])) {
                 $final[] = [
-                    'day'   => $day,
+                    'day' => $day,
                     'count' => $rows[$day]
                 ];
             } else {
                 $final[] = [
-                    'day'   => $day,
+                    'day' => $day,
                     'count' => 0
                 ];
             }

@@ -7,7 +7,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Wohali\OAuth2\Client\Provider\Discord;
@@ -17,46 +17,24 @@ use Wohali\OAuth2\Client\Provider\Discord;
  */
 class UserProvider implements UserProviderInterface
 {
-    /**
-     * @var Discord
-     */
-    protected $discord;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $em;
-
-    /**
-     * Constructor
-     *
-     * @param Discord                $discord
-     * @param EntityManagerInterface $em
-     */
-    public function __construct(Discord $discord, EntityManagerInterface $em)
-    {
-        $this->discord = $discord;
-        $this->em      = $em;
+    public function __construct(
+        private readonly Discord $discord,
+        private readonly EntityManagerInterface $em
+    ) {
     }
 
-    /**
-     * @return string
-     */
-    public function getAuthorizationURL()
+    public function getAuthorizationURL(): string
     {
         return $this->discord->getAuthorizationUrl();
     }
 
     /**
-     * @param string $authorizationCode
-     *
-     * @return User
      * @throws Exception
      * @throws IdentityProviderException
      */
-    public function createUser($authorizationCode)
+    public function createUser(string $authorizationCode): User
     {
-        /** @var \League\OAuth2\Client\Token\AccessToken  $token */
+        /** @var \League\OAuth2\Client\Token\AccessToken $token */
         $token = $this->discord->getAccessToken('authorization_code', [
             'code' => $authorizationCode
         ]);
@@ -84,7 +62,7 @@ class UserProvider implements UserProviderInterface
             ->findByDiscordID($owner['id']);
         if (!$user) {
             $accessToken = new AccessToken();
-            $user        = new User();
+            $user = new User();
             $user
                 ->setIsEnabled(true)
                 ->setDateLastLogin(new DateTime())
@@ -103,7 +81,7 @@ class UserProvider implements UserProviderInterface
             }
         }
 
-        $values  = $token->getValues();
+        $values = $token->getValues();
         $expires = (new DateTime())->setTimestamp($token->getExpires());
         $accessToken
             ->setUser($user)
@@ -121,43 +99,29 @@ class UserProvider implements UserProviderInterface
     }
 
     /**
-     * Loads the user for the given username.
+     * Loads the user for the given identifier (replaces loadUserByUsername in Symfony 8.0).
      *
-     * This method must throw UsernameNotFoundException if the user is not
-     * found.
-     *
-     * @param string $username The username
-     *
-     * @return void
+     * @throws UserNotFoundException
      */
-    public function loadUserByUsername($username)
+    public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        // This method is never used.
-        throw new UsernameNotFoundException();
+        throw new UserNotFoundException();
     }
 
     /**
      * Refreshes the user.
      *
-     * It is up to the implementation to decide if the user data should be
-     * totally reloaded (e.g. from the database), or if the UserInterface
-     * object can just be merged into some internal array of users / identity
-     * map.
-     *
-     * @param UserInterface|User $user
-     *
-     * @return UserInterface
      * @throws IdentityProviderException
      */
-    public function refreshUser(UserInterface $user)
+    public function refreshUser(UserInterface $user): UserInterface
     {
-        if (!($user instanceof UserInterface)) {
-            return null;
+        if (!($user instanceof User)) {
+            throw new UserNotFoundException();
         }
 
         $accessToken = $user->getDiscordAccessToken();
         if (!$accessToken) {
-            return null;
+            throw new UserNotFoundException();
         }
         if (!$accessToken->isExpired()) {
             return $this->findUser($user->getId());
@@ -167,7 +131,7 @@ class UserProvider implements UserProviderInterface
             'refresh_token' => $accessToken->getRefreshToken()
         ]);
         if ($newAccessToken) {
-            $values      = $newAccessToken->getValues();
+            $values = $newAccessToken->getValues();
             $dateExpires = (new DateTime())->setTimestamp($newAccessToken->getExpires());
             $accessToken
                 ->setToken($newAccessToken->getToken())
@@ -180,27 +144,18 @@ class UserProvider implements UserProviderInterface
             return $this->findUser($user->getId());
         }
 
-        return null;
+        throw new UserNotFoundException();
     }
 
     /**
      * Whether this provider supports the given user class.
-     *
-     * @param string $class
-     *
-     * @return bool
      */
-    public function supportsClass($class)
+    public function supportsClass(string $class): bool
     {
         return User::class === $class;
     }
 
-    /**
-     * @param int $id
-     *
-     * @return User
-     */
-    private function findUser($id)
+    private function findUser(int $id): User
     {
         return $this->em->getRepository(User::class)->findByID($id);
     }

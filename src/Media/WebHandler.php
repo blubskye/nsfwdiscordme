@@ -9,68 +9,37 @@ use App\Media\Adapter\AdapterInterface;
  */
 class WebHandler implements WebHandlerInterface
 {
-    /**
-     * @var AdapterInterface
-     */
-    protected $adapter;
-
-    /**
-     * @var array
-     */
-    protected $cdnRootURLs = [];
-
-    /**
-     * Constructor
-     *
-     * @param AdapterInterface $adapter
-     * @param array            $cdnRootURLs
-     */
-    public function __construct(AdapterInterface $adapter, array $cdnRootURLs)
-    {
-        $this->adapter     = $adapter;
-        $this->cdnRootURLs = $cdnRootURLs;
+    public function __construct(
+        protected AdapterInterface $adapter,
+        protected array $cdnRootURLs = []
+    ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getAdapter()
+    public function getAdapter(): AdapterInterface
     {
         return $this->adapter;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function setAdapter(AdapterInterface $adapter)
+    public function setAdapter(AdapterInterface $adapter): self
     {
         $this->adapter = $adapter;
 
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getCDNRootURLs()
+    public function getCDNRootURLs(): array
     {
         return $this->cdnRootURLs;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function setCDNRootURLs(array $cdnRootURLs)
+    public function setCDNRootURLs(array $cdnRootURLs): self
     {
         $this->cdnRootURLs = $cdnRootURLs;
 
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function write($name, $path, $localFile)
+    public function write(string $name, string $path, string $localFile): Media
     {
         $this->adapter->write($path, $localFile, [
             'mkdir' => true
@@ -84,15 +53,12 @@ class WebHandler implements WebHandlerInterface
         return $media;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getWebURL(Media $media)
+    public function getWebURL(Media $media): string
     {
         $adapter = $media->getAdapter();
         if (!isset($this->cdnRootURLs[$adapter])) {
             throw new Exception\AdapterNotFoundException(
-                "CDN not found for adapter ${adapter}."
+                "CDN not found for adapter {$adapter}."
             );
         }
 

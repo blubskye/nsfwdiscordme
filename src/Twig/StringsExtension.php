@@ -9,13 +9,10 @@ use Twig\TwigFilter;
  */
 class StringsExtension extends AbstractExtension
 {
-    /**
-     * @return TwigFilter[]
-     */
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
-            new TwigFilter('ucwords', 'ucwords')
+            new TwigFilter('ucwords', ucwords(...))
         ];
     }
 }

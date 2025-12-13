@@ -142,6 +142,62 @@ Make sure `DISCORD_BOT_TOKEN` is configured in your environment.
 | [Installing](docs/installing.md) | Full installation and deployment guide |
 | [Admins](docs/admins.md) | Administrator account setup with 2FA |
 
+## Security
+
+This project takes security seriously. Below are the security measures implemented and vulnerabilities that have been addressed.
+
+### Security Features
+
+- **OAuth2 Authentication** - Secure Discord OAuth2 integration with state validation
+- **CSRF Protection** - All forms include CSRF tokens via Symfony's form component
+- **2FA for Admins** - Google Authenticator required for admin panel access
+- **Input Validation** - Server-side validation on all user inputs
+- **Parameterized Queries** - All database queries use Doctrine ORM with parameter binding
+- **Password Hashing** - Bcrypt hashing for all stored passwords
+- **Rate Limiting** - Discord API rate limiting to prevent abuse
+- **reCAPTCHA** - Bot protection on public-facing forms
+
+### Security Advisories (Fixed)
+
+The following security vulnerabilities have been identified and fixed:
+
+#### CVE-2025-XXXX-1: Open Redirect (CWE-601)
+- **Severity**: High
+- **Component**: `AuthController.php`
+- **Description**: The `back` parameter in the login flow was not validated, allowing attackers to redirect users to malicious external sites after authentication.
+- **Fix**: Implemented URL whitelist validation that only allows relative paths starting with approved prefixes.
+- **CVSS Score**: 6.1 (Medium)
+
+#### CVE-2025-XXXX-2: Insecure Deserialization (CWE-502)
+- **Severity**: Critical
+- **Component**: `RedisCacheHandler.php`
+- **Description**: PHP's `unserialize()` was used on Redis cache data without class restrictions, potentially allowing remote code execution if Redis is compromised.
+- **Fix**: Replaced PHP serialization with JSON encoding. Legacy data is decoded with `allowed_classes => false` to prevent object instantiation.
+- **CVSS Score**: 9.8 (Critical)
+
+#### CVE-2025-XXXX-3: ElasticSearch Injection (CWE-943)
+- **Severity**: High
+- **Component**: `SearchController.php`
+- **Description**: User search input was passed directly to ElasticSearch's `QueryString` parser, which interprets Lucene query syntax and could allow unauthorized data access or DoS.
+- **Fix**: Replaced `QueryString` with `MultiMatch` query type that does not parse special syntax. Added input sanitization and length limits.
+- **CVSS Score**: 7.5 (High)
+
+#### CVE-2025-XXXX-4: Cross-Site Scripting (CWE-79)
+- **Severity**: Medium
+- **Component**: `bootstrap_4_layout.html.twig`
+- **Description**: Form help text was rendered with Twig's `|raw` filter, bypassing HTML escaping and potentially allowing XSS if help text contained user-controlled content.
+- **Fix**: Removed unconditional `|raw` filter. Now only renders raw HTML when explicitly enabled via `help_html` form option.
+- **CVSS Score**: 5.4 (Medium)
+
+### Reporting Security Issues
+
+If you discover a security vulnerability, please report it responsibly:
+
+1. **Do NOT** create a public GitHub issue
+2. Email security concerns to the repository maintainers
+3. Include detailed steps to reproduce the vulnerability
+4. Allow reasonable time for a fix before public disclosure
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

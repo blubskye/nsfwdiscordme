@@ -3,62 +3,32 @@ namespace App\Command;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
-/**
- * Class UserRemoveRoleCommand
- */
+#[AsCommand(
+    name: 'app:user:role-remove',
+    description: 'Removes a role from a user'
+)]
 class UserRoleRemoveCommand extends Command
 {
-    /**
-     * @var string
-     */
-    protected static $defaultName = 'app:user:role-remove';
-
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $em;
-
-    /**
-     * Constructor
-     *
-     * @param EntityManagerInterface $em
-     */
-    public function __construct(EntityManagerInterface $em)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em
+    ) {
         parent::__construct();
-
-        $this->em = $em;
     }
 
-    /**
-     *
-     */
-    protected function configure()
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->setDescription('Removes a role from a user.');
-    }
-
-    /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return int|void|null
-     * @throws Exception
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $repo   = $this->em->getRepository(User::class);
+        $repo = $this->em->getRepository(User::class);
         $helper = $this->getHelper('question');
 
         $question = new Question('Discord email or ID: ', false);
         if (!($email = $helper->ask($input, $output, $question))) {
-            return;
+            return Command::FAILURE;
         }
 
         if (is_numeric($email)) {
@@ -68,11 +38,12 @@ class UserRoleRemoveCommand extends Command
         }
         if (!$user) {
             $output->writeln('User not found.');
+            return Command::FAILURE;
         }
 
         $question = new Question('Role to remove, i.e. ROLE_ADMIN: ', false);
         if (!($role = $helper->ask($input, $output, $question))) {
-            return;
+            return Command::FAILURE;
         }
 
         $user->removeRole($role);
@@ -81,5 +52,7 @@ class UserRoleRemoveCommand extends Command
         }
         $this->em->flush();
         $output->writeln('Role removed. The user should log out and log back in now.');
+
+        return Command::SUCCESS;
     }
 }

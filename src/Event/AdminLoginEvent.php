@@ -3,39 +3,23 @@ namespace App\Event;
 
 use App\Admin\LoggableEntityInterface;
 use App\Entity\User;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
- * Class AdminLoginEvent
+ * Triggered when an admin logs in.
  */
-class AdminLoginEvent extends Event implements LoggableEntityInterface
+readonly class AdminLoginEvent extends Event implements LoggableEntityInterface
 {
-    /**
-     * @var User
-     */
-    protected $user;
-
-    /**
-     * Constructor
-     *
-     * @param User $user
-     */
-    public function __construct(User $user)
-    {
-        $this->user = $user;
+    public function __construct(
+        private User $user
+    ) {
     }
 
-    /**
-     * @return string
-     */
-    public function getLoggableMessage()
+    public function getLoggableMessage(): string
     {
         return sprintf('at %s', date('Y-m-d H:i:s'));
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): User
     {
         return $this->user;

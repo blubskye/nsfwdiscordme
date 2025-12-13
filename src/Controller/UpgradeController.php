@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class UpgradeController extends Controller
 {
     const PRICES = [
-        Server::STATUS_RUBY  => [
+        Server::STATUS_RUBY => [
             '30' => 1250
         ],
         Server::STATUS_TOPAZ => [
@@ -29,13 +29,10 @@ class UpgradeController extends Controller
     ];
 
     /**
-     * @param string  $slug
-     *
-     * @return Response
      * @throws Exception
      */
     #[Route('/upgrade/server/{slug}', name: 'index', methods: ['GET'])]
-    public function indexAction($slug): Response
+    public function indexAction(string $slug): Response
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_MANAGER)) {
@@ -45,21 +42,16 @@ class UpgradeController extends Controller
         return $this->render('upgrade/index.html.twig', [
             'server' => $server,
             'prices' => self::PRICES,
-            'title'  => sprintf('Upgrade %s', $server->getName())
+            'title' => sprintf('Upgrade %s', $server->getName())
         ]);
     }
 
     /**
-     * @param string         $slug
-     * @param Request        $request
-     * @param PaymentService $paymentService
-     *
-     * @return RedirectResponse
      * @throws GuzzleException
      * @throws Exception
      */
     #[Route('/upgrade/server/{slug}', name: 'purchase', methods: ['POST'])]
-    public function purchaseAction($slug, Request $request, PaymentService $paymentService): RedirectResponse
+    public function purchaseAction(string $slug, Request $request, PaymentService $paymentService): RedirectResponse
     {
         $server = $this->fetchServerOrThrow($slug);
         if (!$this->hasServerAccess($server, self::SERVER_ROLE_MANAGER)) {
@@ -67,7 +59,7 @@ class UpgradeController extends Controller
         }
 
         $premiumStatus = $request->request->get('premiumStatus');
-        $period        = $request->request->get('period');
+        $period = $request->request->get('period');
         if (empty($period) || empty(self::PRICES[$premiumStatus][$period])) {
             throw $this->createNotFoundException();
         }
@@ -91,22 +83,19 @@ class UpgradeController extends Controller
         $description = sprintf('Purchasing premium server status for "%s".', $server->getName());
 
         $token = $paymentService->getToken([
-            'price'         => self::PRICES[$premiumStatus][$period],
-            'description'   => $description,
+            'price' => self::PRICES[$premiumStatus][$period],
+            'description' => $description,
             'transactionID' => $purchase->getId(),
-            'successURL'    => $this->generateUrl('upgrade_complete', [], UrlGeneratorInterface::ABSOLUTE_URL),
-            'cancelURL'     => $this->generateUrl('home_index'),
-            'failureURL'    => $this->generateUrl('upgrade_failure', [], UrlGeneratorInterface::ABSOLUTE_URL),
-            'webhookURL'    => $this->generateUrl('upgrade_webhook', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'successURL' => $this->generateUrl('upgrade_complete', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'cancelURL' => $this->generateUrl('home_index'),
+            'failureURL' => $this->generateUrl('upgrade_failure', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'webhookURL' => $this->generateUrl('upgrade_webhook', [], UrlGeneratorInterface::ABSOLUTE_URL),
         ]);
 
         return new RedirectResponse($paymentService->getPurchaseURL($token));
     }
 
     /**
-     * @param Request $request
-     *
-     * @return Response
      * @throws Exception
      */
     #[Route('/upgrade/complete', name: 'complete')]
@@ -129,7 +118,7 @@ class UpgradeController extends Controller
 
         return $this->render('upgrade/complete.html.twig', [
             'purchase' => $purchase,
-            'title'    => 'Purchase Complete'
+            'title' => 'Purchase Complete'
         ]);
     }
 
@@ -144,21 +133,18 @@ class UpgradeController extends Controller
     }
 
     /**
-     * @param Request        $request
-     * @param PaymentService $paymentService
-     *
-     * @return JsonResponse
      * @throws Exception
      * @throws GuzzleException
      */
     #[Route('/webhook', name: 'webhook', methods: ['POST'])]
     public function webhookAction(Request $request, PaymentService $paymentService): JsonResponse
     {
-        $success       = $request->json->get('success');
-        $token         = $request->json->get('token');
-        $code          = $request->json->get('code');
-        $price         = $request->json->get('price');
-        $transactionID = $request->json->get('transactionID');
+        $payload = json_decode($request->getContent(), true);
+        $success = $payload['success'] ?? false;
+        $token = $payload['token'] ?? null;
+        $code = $payload['code'] ?? null;
+        $price = $payload['price'] ?? null;
+        $transactionID = $payload['transactionID'] ?? null;
         if (!$token || !$code || !$transactionID || !$price) {
             return new JsonResponse(['ok'], 400);
         }
@@ -205,15 +191,15 @@ class UpgradeController extends Controller
             $server->setPremiumStatus($purchase->getPremiumStatus());
             $purchasePeriod
                 ->setDateBegins(new DateTime())
-                ->setDateExpires(new DateTime("${period} days"));
+                ->setDateExpires(new DateTime("{$period} days"));
         }
 
         $this->em->flush();
 
         $action = sprintf('Purchased premium server status %s.', Server::STATUSES_STR[$purchase->getPremiumStatus()]);
         $this->eventDispatcher->dispatch(
-            'app.server.action',
-            new ServerActionEvent($server, $purchase->getUser(), $action)
+            new ServerActionEvent($server, $purchase->getUser(), $action),
+            'app.server.action'
         );
 
         return new JsonResponse(['ok']);

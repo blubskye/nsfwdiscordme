@@ -3,82 +3,52 @@ namespace App\Twig;
 
 use App\Entity\Server;
 use App\Entity\User;
+use App\Enum\ServerPremiumStatus;
 use App\Security\ServerAccessInterface;
+use DateTime;
 use Exception;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
 use Twig\TwigFilter;
-use DateTime;
+use Twig\TwigFunction;
 
 /**
  * Class ServerExtension
  */
 class ServerExtension extends AbstractExtension
 {
-    /**
-     * @var RouterInterface
-     */
-    protected $router;
-
-    /**
-     * @var ServerAccessInterface
-     */
-    protected $serverAccess;
-
-    /**
-     * Constructor
-     *
-     * @param RouterInterface       $router
-     * @param ServerAccessInterface $serverAccess
-     */
-    public function __construct(RouterInterface $router, ServerAccessInterface $serverAccess)
-    {
-        $this->router       = $router;
-        $this->serverAccess = $serverAccess;
+    public function __construct(
+        protected RouterInterface $router,
+        protected ServerAccessInterface $serverAccess
+    ) {
     }
 
-    /**
-     * @return TwigFilter[]
-     */
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
-            new TwigFilter('serverURL', [$this, 'serverURL']),
-            new TwigFilter('serverNextBump', [$this, 'serverNextBump']),
-            new TwigFilter('premiumStatusString', [$this, 'premiumStatusString'])
+            new TwigFilter('serverURL', $this->serverURL(...)),
+            new TwigFilter('serverNextBump', $this->serverNextBump(...)),
+            new TwigFilter('premiumStatusString', $this->premiumStatusString(...))
         ];
     }
 
-    /**
-     * @return TwigFunction[]
-     */
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return [
-            new TwigFunction('hasServerAccess', [$this, 'hasServerAccess'])
+            new TwigFunction('hasServerAccess', $this->hasServerAccess(...))
         ];
     }
 
-    /**
-     * @param Server $server
-     * @param int    $referenceType
-     *
-     * @return string
-     */
-    public function serverURL(Server $server, $referenceType = UrlGeneratorInterface::ABSOLUTE_URL)
+    public function serverURL(Server $server, int $referenceType = UrlGeneratorInterface::ABSOLUTE_URL): string
     {
         return $this->router->generate('server_index', ['slug' => $server->getSlug()], $referenceType);
     }
 
     /**
-     * @param Server $server
-     *
-     * @return string
      * @throws Exception
      */
-    public function serverNextBump(Server $server)
+    public function serverNextBump(Server $server): string
     {
         $dateNextBump = $server->getDateNextBump();
         if (!$dateNextBump) {
@@ -86,34 +56,20 @@ class ServerExtension extends AbstractExtension
         }
 
         $interval = $dateNextBump->diff(new DateTime());
-        if ($interval->d !== 0) {
-            return $interval->format("%ad %hh %im %ss");
-        } else if ($interval->h !== 0) {
-            return $interval->format("%hh %im %ss");
-        }
-
-        return $interval->format("%im %ss");
+        return match (true) {
+            $interval->d !== 0 => $interval->format("%ad %hh %im %ss"),
+            $interval->h !== 0 => $interval->format("%hh %im %ss"),
+            default => $interval->format("%im %ss"),
+        };
     }
 
-    /**
-     * @param Server $server
-     * @param string $role
-     * @param User   $user
-     *
-     * @return bool
-     */
-    public function hasServerAccess(Server $server, $role, User $user = null)
+    public function hasServerAccess(Server $server, string $role, ?User $user = null): bool
     {
         return $this->serverAccess->can($server, $role, $user);
     }
 
-    /**
-     * @param string $status
-     *
-     * @return string
-     */
-    public function premiumStatusString($status)
+    public function premiumStatusString(int $status): string
     {
-        return Server::STATUSES_STR[$status];
+        return ServerPremiumStatus::tryFrom($status)?->label() ?? Server::STATUSES_STR[$status];
     }
 }

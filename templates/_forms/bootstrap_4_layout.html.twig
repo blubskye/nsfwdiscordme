@@ -1,8 +1,17 @@
 {% extends "bootstrap_4_layout.html.twig" %}
+{#
+  Security: Removed |raw filter from form help text to prevent XSS attacks (CWE-79).
+  Help text is now properly escaped. If HTML is needed in help text, use the
+  Symfony form option 'help_html' => true which handles escaping appropriately.
+#}
 {% block form_help %}
   {% if form.vars.help|default %}
     <div class="form-text form-help">
-      {{ form.vars.help|raw }}
+      {% if form.vars.help_html|default(false) %}
+        {{ form.vars.help|raw }}
+      {% else %}
+        {{ form.vars.help }}
+      {% endif %}
     </div>
   {% endif %}
 {% endblock %}

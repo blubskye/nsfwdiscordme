@@ -4,6 +4,7 @@ namespace App\Security;
 use App\Entity\Server;
 use App\Entity\ServerTeamMember;
 use App\Entity\User;
+use App\Enum\ServerTeamRole;
 use App\Repository\ServerTeamMemberRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
@@ -14,12 +15,12 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class ServerAccess implements ServerAccessInterface
 {
-    const ROLE_OWNER   = 'owner';
-    const ROLE_MANAGER = 'manager';
-    const ROLE_EDITOR  = 'editor';
-    const ROLE_NONE    = 'none';
+    public const ROLE_OWNER   = 'owner';
+    public const ROLE_MANAGER = 'manager';
+    public const ROLE_EDITOR  = 'editor';
+    public const ROLE_NONE    = 'none';
 
-    const ROLES = [
+    public const ROLES = [
         self::ROLE_OWNER => [
             self::ROLE_OWNER,
             self::ROLE_MANAGER,
@@ -34,32 +35,16 @@ class ServerAccess implements ServerAccessInterface
         ]
     ];
 
-    /**
-     * @var TokenStorageInterface
-     */
-    protected $tokenStorage;
+    protected ServerTeamMemberRepository $repo;
 
-    /**
-     * @var ServerTeamMemberRepository
-     */
-    protected $repo;
-
-    /**
-     * Constructor
-     *
-     * @param TokenStorageInterface  $tokenStorage
-     * @param EntityManagerInterface $em
-     */
-    public function __construct(TokenStorageInterface $tokenStorage, EntityManagerInterface $em)
-    {
-        $this->tokenStorage = $tokenStorage;
-        $this->repo         = $em->getRepository(ServerTeamMember::class);
+    public function __construct(
+        protected TokenStorageInterface $tokenStorage,
+        EntityManagerInterface $em
+    ) {
+        $this->repo = $em->getRepository(ServerTeamMember::class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getRoleNames()
+    public function getRoleNames(): array
     {
         return [
             self::ROLE_OWNER,
@@ -69,18 +54,14 @@ class ServerAccess implements ServerAccessInterface
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function can(Server $server, $role, User $user = null)
+    public function can(Server $server, string $role, ?User $user = null): bool
     {
         if (!in_array($role, $this->getRoleNames())) {
             throw new InvalidArgumentException(
-                "Server role ${role} is invalid."
+                "Server role {$role} is invalid."
             );
         }
 
-        /** @var User $user */
         if (!$user) {
             $token = $this->tokenStorage->getToken();
             if (!$token) {
@@ -88,7 +69,7 @@ class ServerAccess implements ServerAccessInterface
             }
             $user = $token->getUser();
         }
-        if (!$user || !is_object($user)) {
+        if (!$user instanceof User) {
             return false;
         }
 
@@ -100,10 +81,7 @@ class ServerAccess implements ServerAccessInterface
         return $this->containsRole($role, $teamMember->getRole());
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function containsRole($isRole, $canRole)
+    public function containsRole(string $isRole, string $canRole): bool
     {
         return in_array($isRole, self::ROLES[$canRole]);
     }

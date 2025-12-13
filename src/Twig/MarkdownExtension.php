@@ -10,14 +10,8 @@ use Twig\TwigFilter;
  */
 class MarkdownExtension extends AbstractExtension
 {
-    /**
-     * @var MarkdownParser
-     */
-    protected $parsedown;
+    protected MarkdownParser $parsedown;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         $this->parsedown = new MarkdownParser();
@@ -26,13 +20,10 @@ class MarkdownExtension extends AbstractExtension
         $this->parsedown->setUrlsLinked(false);
     }
 
-    /**
-     * @return TwigFilter[]
-     */
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
-            new TwigFilter('markdown', [$this->parsedown, 'text'], ['is_safe' => ['html']])
+            new TwigFilter('markdown', $this->parsedown->text(...), ['is_safe' => ['html']])
         ];
     }
 }
