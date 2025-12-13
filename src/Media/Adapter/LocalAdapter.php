@@ -6,62 +6,41 @@ namespace App\Media\Adapter;
  */
 class LocalAdapter implements AdapterInterface
 {
-    /**
-     * @var string
-     */
-    protected $savePath;
+    protected string $savePath;
 
-    /**
-     * Constructor
-     *
-     * @param string $savePath
-     */
-    public function __construct($savePath)
+    public function __construct(string $savePath)
     {
         $this->setSavePath($savePath);
     }
 
-    /**
-     * @param string $savePath
-     *
-     * @return $this
-     */
-    public function setSavePath($savePath)
+    public function setSavePath(string $savePath): self
     {
         $this->savePath = $savePath;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getSavePath()
+    public function getSavePath(): string
     {
         return $this->savePath;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getName()
+    public function getName(): string
     {
         return 'local';
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function write($path, $localFile, array $options = [])
+    public function write(string $path, string $localFile, array $options = []): bool
     {
-        $options = array_merge([
+        $options = [
             'mkdir'     => false,
-            'overwrite' => false
-        ], $options);
+            'overwrite' => false,
+            ...$options
+        ];
 
         if (!is_readable($localFile)) {
             throw new Exception\FileNotFoundException(
-                "File ${localFile} does not exist or is not readable."
+                "File {$localFile} does not exist or is not readable."
             );
         }
 
@@ -70,7 +49,7 @@ class LocalAdapter implements AdapterInterface
                 $this->remove($path);
             } else {
                 throw new Exception\FileExistsException(
-                    "File ${path} already exists."
+                    "File {$path} already exists."
                 );
             }
         }
@@ -81,12 +60,12 @@ class LocalAdapter implements AdapterInterface
             if ($options['mkdir']) {
                 if (!@mkdir($directory)) {
                     throw new Exception\WriteException(
-                        "Unable to create directory ${directory}."
+                        "Unable to create directory {$directory}."
                     );
                 }
             } else {
                 throw new Exception\FileNotFoundException(
-                    "Directory ${directory} does not exist or is not writable."
+                    "Directory {$directory} does not exist or is not writable."
                 );
             }
         }
@@ -94,35 +73,24 @@ class LocalAdapter implements AdapterInterface
         return copy($localFile, $this->getWritePath($path));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function exists($path)
+    public function exists(string $path): bool
     {
         return is_readable($this->getWritePath($path));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function remove($path)
+    public function remove(string $path): bool
     {
         $writePath = $this->getWritePath($path);
         if (!is_readable($writePath)) {
             throw new Exception\FileNotFoundException(
-                "File ${writePath} does not exist or is not readable."
+                "File {$writePath} does not exist or is not readable."
             );
         }
 
         return unlink($writePath);
     }
 
-    /**
-     * @param string $path
-     *
-     * @return string
-     */
-    private function getWritePath($path)
+    private function getWritePath(string $path): string
     {
         return sprintf('%s/%s', $this->savePath, trim($path, '/\\'));
     }

@@ -2,6 +2,7 @@
 namespace App\Entity;
 
 use App\Admin\LoggableEntityInterface;
+use App\Enum\UserRole;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,15 +18,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity(repositoryClass: 'App\Repository\UserRepository')]
 class User implements UserInterface, LoggableEntityInterface
 {
-    const ROLE_USER        = 'ROLE_USER';
-    const ROLE_ADMIN       = 'ROLE_ADMIN';
-    const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
-
-    const ROLES = [
-        self::ROLE_USER,
-        self::ROLE_ADMIN,
-        self::ROLE_SUPER_ADMIN
-    ];
+    // Keep constants for backward compatibility
+    public const ROLE_USER = 'ROLE_USER';
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
 
     #[ORM\Id]
     #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
@@ -72,30 +68,21 @@ class User implements UserInterface, LoggableEntityInterface
     #[ORM\Column(type: 'datetime')]
     protected DateTime $dateLastLogin;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
-        $this->dateCreated   = new DateTime();
-        $this->dateUpdated   = new DateTime();
+        $this->dateCreated = new DateTime();
+        $this->dateUpdated = new DateTime();
         $this->dateLastLogin = new DateTime();
-        $this->servers       = new ArrayCollection();
-        $this->roles         = [self::ROLE_USER];
+        $this->servers = new ArrayCollection();
+        $this->roles = [UserRole::USER->value];
     }
 
-    /**
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->getUserIdentifier();
     }
 
-    /**
-     * @return string
-     */
-    public function getLoggableMessage()
+    public function getLoggableMessage(): string
     {
         return sprintf(
             'user #%d "%s#%s"',
@@ -105,27 +92,16 @@ class User implements UserInterface, LoggableEntityInterface
         );
     }
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return bool
-     */
     public function isEnabled(): bool
     {
         return $this->isEnabled;
     }
 
-    /**
-     * @param bool $isEnabled
-     *
-     * @return self
-     */
     public function setIsEnabled(bool $isEnabled): self
     {
         $this->isEnabled = $isEnabled;
@@ -133,19 +109,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return AccessToken
-     */
     public function getDiscordAccessToken(): ?AccessToken
     {
         return $this->discordAccessToken;
     }
 
-    /**
-     * @param AccessToken $discordAccessToken
-     *
-     * @return self
-     */
     public function setDiscordAccessToken(AccessToken $discordAccessToken): self
     {
         $this->discordAccessToken = $discordAccessToken;
@@ -153,19 +121,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
     public function getDiscordID(): ?int
     {
         return $this->discordID;
     }
 
-    /**
-     * @param int $discordID
-     *
-     * @return self
-     */
     public function setDiscordID(int $discordID): self
     {
         $this->discordID = $discordID;
@@ -173,19 +133,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDiscordUsername(): ?string
     {
         return $this->discordUsername;
     }
 
-    /**
-     * @param string $discordUsername
-     *
-     * @return self
-     */
     public function setDiscordUsername(string $discordUsername): self
     {
         $this->discordUsername = $discordUsername;
@@ -193,19 +145,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDiscordEmail(): ?string
     {
         return $this->discordEmail;
     }
 
-    /**
-     * @param string $discordEmail
-     *
-     * @return self
-     */
     public function setDiscordEmail(string $discordEmail): self
     {
         $this->discordEmail = $discordEmail;
@@ -213,27 +157,16 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDiscordAvatar(): ?string
     {
         return $this->discordAvatar;
     }
 
-    /**
-     * @return string
-     */
     public function getDiscordAvatarURL(): string
     {
         return sprintf('https://cdn.discordapp.com/avatars/%s/%s.png', $this->getDiscordID(), $this->getDiscordAvatar());
     }
 
-    /**
-     * @param string $discordAvatar
-     *
-     * @return self
-     */
     public function setDiscordAvatar(string $discordAvatar): self
     {
         $this->discordAvatar = $discordAvatar;
@@ -241,19 +174,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDiscordDiscriminator(): ?string
     {
         return $this->discordDiscriminator;
     }
 
-    /**
-     * @param string $discordDiscriminator
-     *
-     * @return self
-     */
     public function setDiscordDiscriminator(string $discordDiscriminator): self
     {
         $this->discordDiscriminator = $discordDiscriminator;
@@ -261,19 +186,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return Collection|Server[]
-     */
     public function getServers(): Collection
     {
         return $this->servers;
     }
 
-    /**
-     * @param Collection $servers
-     *
-     * @return self
-     */
     public function setServers(Collection $servers): self
     {
         $this->servers = $servers;
@@ -281,19 +198,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDateCreated(): DateTime
     {
         return $this->dateCreated;
     }
 
-    /**
-     * @param DateTime $dateCreated
-     *
-     * @return self
-     */
     public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
@@ -301,19 +210,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDateUpdated(): DateTime
     {
         return $this->dateUpdated;
     }
 
-    /**
-     * @param DateTime $dateUpdated
-     *
-     * @return self
-     */
     public function setDateUpdated(DateTime $dateUpdated): self
     {
         $this->dateUpdated = $dateUpdated;
@@ -321,19 +222,11 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDateLastLogin(): DateTime
     {
         return $this->dateLastLogin;
     }
 
-    /**
-     * @param DateTime $dateLastLogin
-     *
-     * @return self
-     */
     public function setDateLastLogin(DateTime $dateLastLogin): self
     {
         $this->dateLastLogin = $dateLastLogin;
@@ -341,29 +234,17 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string[]
-     */
     public function getRoles(): array
     {
         return $this->roles;
     }
 
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
-    public function hasRole($role): bool
+    public function hasRole(string|UserRole $role): bool
     {
-        return in_array(strtoupper($role), $this->getRoles(), true);
+        $roleValue = $role instanceof UserRole ? $role->value : strtoupper($role);
+        return in_array($roleValue, $this->getRoles(), true);
     }
 
-    /**
-     * @param array $roles
-     *
-     * @return self
-     */
     public function setRoles(array $roles): self
     {
         $this->roles = [];
@@ -374,127 +255,81 @@ class User implements UserInterface, LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @param string $role
-     *
-     * @return self
-     */
-    public function addRole($role): self
+    public function addRole(string|UserRole $role): self
     {
-        $role = strtoupper($role);
-        if (!in_array($role, self::ROLES)) {
-            throw new InvalidArgumentException(
-                "Invalid role ${role}."
-            );
+        $roleValue = $role instanceof UserRole ? $role->value : strtoupper($role);
+
+        if (!array_any(UserRole::values(), fn($r) => $r === $roleValue)) {
+            throw new InvalidArgumentException("Invalid role {$roleValue}.");
         }
-        if ($role !== self::ROLE_SUPER_ADMIN && !in_array($role, $this->roles, true)) {
-            $this->roles[] = $role;
+
+        if ($roleValue !== UserRole::SUPER_ADMIN->value && !in_array($roleValue, $this->roles, true)) {
+            $this->roles[] = $roleValue;
         }
 
         return $this;
     }
 
-    /**
-     * @param string $role
-     *
-     * @return self
-     */
-    public function removeRole($role): self
+    public function removeRole(string|UserRole $role): self
     {
-        $role = strtoupper($role);
-        if (!in_array($role, self::ROLES)) {
-            throw new InvalidArgumentException(
-                "Invalid role ${role}."
-            );
+        $roleValue = $role instanceof UserRole ? $role->value : strtoupper($role);
+
+        if (!array_any(UserRole::values(), fn($r) => $r === $roleValue)) {
+            throw new InvalidArgumentException("Invalid role {$roleValue}.");
         }
-        $index = array_search($role, $this->roles);
+
+        $index = array_search($roleValue, $this->roles);
         if ($index !== false) {
             unset($this->roles[$index]);
         }
 
         if (empty($this->roles)) {
-            $this->roles = [self::ROLE_USER];
+            $this->roles = [UserRole::USER->value];
         }
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getPassword(): string
     {
         return '';
     }
 
-    /**
-     * @return string|null
-     */
     public function getSalt(): ?string
     {
         return null;
     }
 
-    /**
-     * @return string
-     */
     public function getUsername(): string
     {
         return $this->getDiscordUsername() ?? '';
     }
 
-    /**
-     * @return string
-     */
     public function getUserIdentifier(): string
     {
         return $this->getDiscordUsername() ?? '';
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         // Nothing here
     }
 
-    /**
-     * Return true if the user should do two-factor authentication.
-     *
-     * @return bool
-     */
     public function isGoogleAuthenticatorEnabled(): bool
     {
-        return $this->googleAuthenticatorSecret ? true : false;
+        return (bool) $this->googleAuthenticatorSecret;
     }
 
-    /**
-     * Return the user name.
-     *
-     * @return string
-     */
     public function getGoogleAuthenticatorUsername(): string
     {
         return $this->getUserIdentifier();
     }
 
-    /**
-     * Return the Google Authenticator secret
-     * When an empty string is returned, the Google authentication is disabled.
-     *
-     * @return string
-     */
     public function getGoogleAuthenticatorSecret(): ?string
     {
         return $this->googleAuthenticatorSecret;
     }
 
-    /**
-     * @param string|null $googleAuthenticatorSecret
-     *
-     * @return self
-     */
     public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): self
     {
         $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;

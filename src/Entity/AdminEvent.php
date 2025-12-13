@@ -96,7 +96,7 @@ class AdminEvent
     {
         if (!array_key_exists($eventType, self::TYPES)) {
             throw new InvalidArgumentException(
-                "Invalid event type ${eventType}."
+                "Invalid event type {$eventType}."
             );
         }
         $this->eventType = $eventType;

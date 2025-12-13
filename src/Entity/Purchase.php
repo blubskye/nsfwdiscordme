@@ -2,6 +2,7 @@
 namespace App\Entity;
 
 use App\Admin\LoggableEntityInterface;
+use App\Enum\PurchaseStatus;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
@@ -14,11 +15,11 @@ use InvalidArgumentException;
 #[ORM\Entity(repositoryClass: 'App\Repository\PurchaseRepository')]
 class Purchase implements LoggableEntityInterface
 {
-    const STATUS_PENDING = 0;
-    const STATUS_SUCCESS = 1;
-    const STATUS_FAILURE = 2;
-
-    const STATUSES = [
+    // Keep constants for backward compatibility
+    public const STATUS_PENDING = 0;
+    public const STATUS_SUCCESS = 1;
+    public const STATUS_FAILURE = 2;
+    public const STATUSES = [
         self::STATUS_PENDING,
         self::STATUS_SUCCESS,
         self::STATUS_FAILURE
@@ -56,20 +57,15 @@ class Purchase implements LoggableEntityInterface
     protected DateTime $dateCreated;
 
     /**
-     * Constructor
-     *
      * @throws Exception
      */
     public function __construct()
     {
         $this->dateCreated = new DateTime();
-        $this->status      = self::STATUS_PENDING;
+        $this->status = PurchaseStatus::PENDING->value;
     }
 
-    /**
-     * @return string
-     */
-    public function getLoggableMessage()
+    public function getLoggableMessage(): string
     {
         return sprintf(
             'purchase #%d server = "%s", purchase token = "%s"',
@@ -79,27 +75,16 @@ class Purchase implements LoggableEntityInterface
         );
     }
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return Server
-     */
     public function getServer(): Server
     {
         return $this->server;
     }
 
-    /**
-     * @param Server $server
-     *
-     * @return self
-     */
     public function setServer(Server $server): self
     {
         $this->server = $server;
@@ -107,19 +92,11 @@ class Purchase implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     *
-     * @return self
-     */
     public function setUser(User $user): self
     {
         $this->user = $user;
@@ -127,19 +104,11 @@ class Purchase implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPurchaseToken(): ?string
     {
         return $this->purchaseToken;
     }
 
-    /**
-     * @param string $purchaseToken
-     *
-     * @return self
-     */
     public function setPurchaseToken(string $purchaseToken): self
     {
         $this->purchaseToken = $purchaseToken;
@@ -147,44 +116,33 @@ class Purchase implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getStatus(): int
     {
         return $this->status;
     }
 
-    /**
-     * @param int $status
-     *
-     * @return self
-     */
-    public function setStatus(int $status): self
+    public function getStatusEnum(): PurchaseStatus
     {
-        if (!in_array($status, self::STATUSES)) {
-            throw new InvalidArgumentException(
-                "Invalid status ${status}."
-            );
+        return PurchaseStatus::from($this->status);
+    }
+
+    public function setStatus(int|PurchaseStatus $status): self
+    {
+        $value = $status instanceof PurchaseStatus ? $status->value : $status;
+
+        if (!array_any(PurchaseStatus::values(), fn($s) => $s === $value)) {
+            throw new InvalidArgumentException("Invalid status {$value}.");
         }
-        $this->status = $status;
+        $this->status = $value;
 
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getPremiumStatus(): int
     {
         return $this->premiumStatus;
     }
 
-    /**
-     * @param int $premiumStatus
-     *
-     * @return self
-     */
     public function setPremiumStatus(int $premiumStatus): self
     {
         $this->premiumStatus = $premiumStatus;
@@ -192,19 +150,11 @@ class Purchase implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getPeriod(): int
     {
         return $this->period;
     }
 
-    /**
-     * @param int $period
-     *
-     * @return self
-     */
     public function setPeriod(int $period): self
     {
         $this->period = $period;
@@ -212,19 +162,11 @@ class Purchase implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getPrice(): int
     {
         return $this->price;
     }
 
-    /**
-     * @param int $price
-     *
-     * @return self
-     */
     public function setPrice(int $price): self
     {
         $this->price = $price;
@@ -232,19 +174,11 @@ class Purchase implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDateCreated(): DateTime
     {
         return $this->dateCreated;
     }
 
-    /**
-     * @param DateTime $dateCreated
-     *
-     * @return self
-     */
     public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;

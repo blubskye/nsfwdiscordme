@@ -13,54 +13,32 @@ use Twig\TwigFilter;
  */
 class WebHandlerExtension extends AbstractExtension
 {
-    /**
-     * @var WebHandlerInterface
-     */
-    protected $webHandler;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $em;
-
-    /**
-     * Constructor
-     *
-     * @param WebHandlerInterface    $webHandler
-     * @param EntityManagerInterface $em
-     */
-    public function __construct(WebHandlerInterface $webHandler, EntityManagerInterface $em)
-    {
-        $this->webHandler = $webHandler;
-        $this->em         = $em;
+    public function __construct(
+        protected WebHandlerInterface $webHandler,
+        protected EntityManagerInterface $em
+    ) {
     }
 
-    /**
-     * @return TwigFilter[]
-     */
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
-            new TwigFilter('webPath', [$this, 'webPath'])
+            new TwigFilter('webPath', $this->webPath(...))
         ];
     }
 
     /**
-     * @param Media|string $media
-     *
-     * @return string
      * @throws AdapterNotFoundException
      */
-    public function webPath($media)
+    public function webPath(Media|string $media): string
     {
         if ($media instanceof Media) {
             return $this->webHandler->getWebURL($media);
-        } else {
-            $media = $this->em->getRepository(Media::class)->findByPath($media);
-            if (!$media) {
-                return '/images/default-banner.jpg';
-            }
-            return $this->webHandler->getWebURL($media);
         }
+
+        $media = $this->em->getRepository(Media::class)->findByPath($media);
+        if (!$media) {
+            return '/images/default-banner.jpg';
+        }
+        return $this->webHandler->getWebURL($media);
     }
 }

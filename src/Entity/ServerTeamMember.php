@@ -2,6 +2,7 @@
 namespace App\Entity;
 
 use App\Admin\LoggableEntityInterface;
+use App\Enum\ServerTeamRole;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use Exception;
@@ -14,11 +15,11 @@ use InvalidArgumentException;
 #[ORM\Entity(repositoryClass: 'App\Repository\ServerTeamMemberRepository')]
 class ServerTeamMember implements LoggableEntityInterface
 {
-    const ROLE_OWNER   = 'owner';
-    const ROLE_MANAGER = 'manager';
-    const ROLE_EDITOR  = 'editor';
-
-    const ROLES = [
+    // Keep constants for backward compatibility
+    public const ROLE_OWNER = 'owner';
+    public const ROLE_MANAGER = 'manager';
+    public const ROLE_EDITOR = 'editor';
+    public const ROLES = [
         self::ROLE_OWNER,
         self::ROLE_MANAGER,
         self::ROLE_EDITOR
@@ -59,8 +60,6 @@ class ServerTeamMember implements LoggableEntityInterface
     protected ?DateTime $dateLastAction = null;
 
     /**
-     * Constructor
-     *
      * @throws Exception
      */
     public function __construct()
@@ -68,18 +67,12 @@ class ServerTeamMember implements LoggableEntityInterface
         $this->dateCreated = new DateTime();
     }
 
-    /**
-     * @return string
-     */
     public function __toString(): string
     {
-        return (string)($this->getDiscordID() ?? '');
+        return (string) ($this->getDiscordID() ?? '');
     }
 
-    /**
-     * @return string
-     */
-    public function getLoggableMessage()
+    public function getLoggableMessage(): string
     {
         return sprintf(
             'team member #%d "%s#%s"',
@@ -89,27 +82,16 @@ class ServerTeamMember implements LoggableEntityInterface
         );
     }
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return Server
-     */
     public function getServer(): Server
     {
         return $this->server;
     }
 
-    /**
-     * @param Server $server
-     *
-     * @return self
-     */
     public function setServer(Server $server): self
     {
         $this->server = $server;
@@ -117,19 +99,11 @@ class ServerTeamMember implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): ?User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     *
-     * @return self
-     */
     public function setUser(User $user): self
     {
         $this->user = $user;
@@ -137,19 +111,11 @@ class ServerTeamMember implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getDiscordID(): ?int
     {
         return $this->discordID;
     }
 
-    /**
-     * @param int $discordID
-     *
-     * @return self
-     */
     public function setDiscordID(int $discordID): self
     {
         $this->discordID = $discordID;
@@ -157,19 +123,11 @@ class ServerTeamMember implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDiscordUsername(): ?string
     {
         return $this->discordUsername;
     }
 
-    /**
-     * @param string $discordUsername
-     *
-     * @return self
-     */
     public function setDiscordUsername(string $discordUsername): self
     {
         $this->discordUsername = $discordUsername;
@@ -177,19 +135,11 @@ class ServerTeamMember implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDiscordDiscriminator(): ?string
     {
         return $this->discordDiscriminator;
     }
 
-    /**
-     * @param string $discordDiscriminator
-     *
-     * @return self
-     */
     public function setDiscordDiscriminator(string $discordDiscriminator): self
     {
         $this->discordDiscriminator = $discordDiscriminator;
@@ -197,19 +147,11 @@ class ServerTeamMember implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDiscordAvatar(): ?string
     {
         return $this->discordAvatar;
     }
 
-    /**
-     * @param string $discordAvatar
-     *
-     * @return self
-     */
     public function setDiscordAvatar(string $discordAvatar): self
     {
         $this->discordAvatar = $discordAvatar;
@@ -217,44 +159,33 @@ class ServerTeamMember implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getRole(): string
     {
         return $this->role;
     }
 
-    /**
-     * @param string $role
-     *
-     * @return self
-     */
-    public function setRole(string $role): self
+    public function getRoleEnum(): ServerTeamRole
     {
-        if (!in_array($role, self::ROLES)) {
-            throw new InvalidArgumentException(
-                "Invalid server role ${role}."
-            );
+        return ServerTeamRole::from($this->role);
+    }
+
+    public function setRole(string|ServerTeamRole $role): self
+    {
+        $value = $role instanceof ServerTeamRole ? $role->value : $role;
+
+        if (!array_any(ServerTeamRole::values(), fn($r) => $r === $value)) {
+            throw new InvalidArgumentException("Invalid server role {$value}.");
         }
-        $this->role = $role;
+        $this->role = $value;
 
         return $this;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDateCreated(): DateTime
     {
         return $this->dateCreated;
     }
 
-    /**
-     * @param DateTime $dateCreated
-     *
-     * @return self
-     */
     public function setDateCreated(DateTime $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
@@ -262,19 +193,11 @@ class ServerTeamMember implements LoggableEntityInterface
         return $this;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDateLastAction(): ?DateTime
     {
         return $this->dateLastAction;
     }
 
-    /**
-     * @param DateTime $dateLastAction
-     *
-     * @return self
-     */
     public function setDateLastAction(DateTime $dateLastAction): self
     {
         $this->dateLastAction = $dateLastAction;

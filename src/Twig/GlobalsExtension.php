@@ -11,47 +11,26 @@ use Twig\TwigFilter;
  */
 class GlobalsExtension extends AbstractExtension implements GlobalsInterface
 {
-    /**
-     * @var
-     */
-    protected $categoryRepository;
-
-    /**
-     * Constructor
-     *
-     * @param CategoryRepository $categoryRepository
-     */
-    public function __construct(CategoryRepository $categoryRepository)
-    {
-        $this->categoryRepository = $categoryRepository;
+    public function __construct(
+        protected CategoryRepository $categoryRepository
+    ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getGlobals()
+    public function getGlobals(): array
     {
         return [
             'categories' => $this->categoryRepository->findAll()
         ];
     }
 
-    /**
-     * @return TwigFilter[]
-     */
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
-            new TwigFilter('toBool', [$this, 'toBool'])
+            new TwigFilter('toBool', $this->toBool(...))
         ];
     }
 
-    /**
-     * @param mixed $value
-     *
-     * @return string
-     */
-    public function toBool($value)
+    public function toBool(mixed $value): string
     {
         return $value ? 'true' : 'false';
     }

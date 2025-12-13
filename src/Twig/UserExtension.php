@@ -3,44 +3,32 @@ namespace App\Twig;
 
 use App\Entity\User;
 use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
 use Twig\TwigFilter;
+use Twig\TwigFunction;
 
 /**
  * Class UserExtension
  */
 class UserExtension extends AbstractExtension
 {
-    const DISCORD_CDN_URL = 'https://cdn.discordapp.com';
+    public const DISCORD_CDN_URL = 'https://cdn.discordapp.com';
 
-    /**
-     * @return TwigFilter[]
-     */
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
-            new TwigFilter('avatar', [$this, 'avatar']),
-            new TwigFilter('displayUsername', [$this, 'displayUsername'])
+            new TwigFilter('avatar', $this->avatar(...)),
+            new TwigFilter('displayUsername', $this->displayUsername(...))
         ];
     }
 
-    /**
-     * @return TwigFunction[]
-     */
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return [
-            new TwigFunction('avatarHash', [$this, 'avatarHash'])
+            new TwigFunction('avatarHash', $this->avatarHash(...))
         ];
     }
 
-    /**
-     * @param User   $user
-     * @param string $ext
-     *
-     * @return string
-     */
-    public function avatar(User $user, $ext = 'png')
+    public function avatar(User $user, string $ext = 'png'): string
     {
         $avatarHash = $user->getDiscordAvatar();
         $discordID  = $user->getDiscordID();
@@ -51,25 +39,12 @@ class UserExtension extends AbstractExtension
         return '';
     }
 
-    /**
-     * @param string $discordID
-     * @param string $avatarHash
-     * @param string $ext
-     *
-     * @return string
-     */
-    public function avatarHash($discordID, $avatarHash, $ext = 'png')
+    public function avatarHash(string $discordID, string $avatarHash, string $ext = 'png'): string
     {
         return sprintf('%s/avatars/%d/%s.%s', self::DISCORD_CDN_URL, $discordID, $avatarHash, $ext);
     }
 
-    /**
-     * @param User $user
-     * @param bool $includeDiscriminator
-     *
-     * @return string
-     */
-    public function displayUsername(User $user, $includeDiscriminator = true)
+    public function displayUsername(User $user, bool $includeDiscriminator = true): string
     {
         $discordUsername      = $user->getDiscordUsername();
         $discordDiscriminator = $user->getDiscordDiscriminator();
@@ -78,6 +53,6 @@ class UserExtension extends AbstractExtension
             return $discordUsername;
         }
 
-        return "${discordUsername}#${discordDiscriminator}";
+        return "{$discordUsername}#{$discordDiscriminator}";
     }
 }

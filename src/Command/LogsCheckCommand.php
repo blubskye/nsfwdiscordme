@@ -4,73 +4,41 @@ namespace App\Command;
 use Exception;
 use Redis;
 use SplFileObject;
-use Swift_Mailer;
-use Swift_Message;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
-/**
- * Scans the log files and sends an email to the sysadmin when errors are found.
- */
+#[AsCommand(
+    name: 'app:logs:check',
+    description: 'Scan log files and send email alerts for errors'
+)]
 class LogsCheckCommand extends Command
 {
-    const EMAIL_FROM = 'no-reply@headzoo.io';
-    const EMAIL_TO   = 'sean@headzoo.io';
-    const SUBJECT    = '[nsfwdiscordme log check]';
+    private const EMAIL_FROM = 'no-reply@headzoo.io';
+    private const EMAIL_TO = 'sean@headzoo.io';
+    private const SUBJECT = '[nsfwdiscordme log check]';
 
-    /**
-     * @var string
-     */
-    protected static $defaultName = 'app:logs:check';
-
-    /**
-     * @var string
-     */
-    protected $logFile;
-
-    /**
-     * @var Redis
-     */
-    protected $redis;
-
-    /**
-     * @var Swift_Mailer
-     */
-    protected $mailer;
-
-    /**
-     * Constructor
-     *
-     * @param string       $logFile
-     * @param Redis        $redis
-     * @param Swift_Mailer $mailer
-     */
-    public function __construct($logFile, Redis $redis, Swift_Mailer $mailer)
-    {
+    public function __construct(
+        private readonly string $logFile,
+        private readonly Redis $redis,
+        private readonly MailerInterface $mailer
+    ) {
         parent::__construct();
-        $this->logFile = $logFile;
-        $this->redis   = $redis;
-        $this->mailer  = $mailer;
     }
 
-    /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return int|void|null
-     * @throws Exception
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->redis->select(0);
-        $lastLine = (int)$this->redis->get('app:logs:check:lastLine');
+        $lastLine = (int) $this->redis->get('app:logs:check:lastLine');
         $output->writeln(sprintf('Starting with line %d.', $lastLine));
 
         $file = new SplFileObject($this->logFile);
         $file->seek($lastLine);
 
-        $reports     = [];
+        $reports = [];
         $currentLine = 0;
         while (!$file->eof()) {
             $currentLine++;
@@ -87,21 +55,19 @@ class LogsCheckCommand extends Command
 
         $this->redis->set('app:logs:check:lastLine', $currentLine);
         $output->writeln(sprintf('Done! %d reports found. Last line = %d.', $countReports, $currentLine));
+
+        return Command::SUCCESS;
     }
 
-    /**
-     * @param array           $reports
-     * @param OutputInterface $output
-     */
-    protected function sendReports(array $reports, OutputInterface $output)
+    protected function sendReports(array $reports, OutputInterface $output): void
     {
         $found = [];
         $counts = [
             'CRITICAL' => 0,
-            'ERROR'    => 0,
-            'WARNING'  => 0
+            'ERROR' => 0,
+            'WARNING' => 0
         ];
-        foreach($reports as $report) {
+        foreach ($reports as $report) {
             $counts[$report[3]]++;
             if (!$this->containsReport($found, $report)) {
                 $found[] = $report;
@@ -109,7 +75,7 @@ class LogsCheckCommand extends Command
         }
 
         $message = '';
-        foreach($found as $value) {
+        foreach ($found as $value) {
             $message .= $value[0] . "\n";
         }
 
@@ -123,25 +89,19 @@ class LogsCheckCommand extends Command
             );
 
             $output->writeln('Sending report.');
-            $swiftMessage = (new Swift_Message())
-                ->setFrom(self::EMAIL_FROM)
-                ->setTo(self::EMAIL_TO)
-                ->setSubject(self::SUBJECT)
-                ->setBody($message);
-            $this->mailer->send($swiftMessage);
+            $email = (new Email())
+                ->from(self::EMAIL_FROM)
+                ->to(self::EMAIL_TO)
+                ->subject(self::SUBJECT)
+                ->text($message);
+            $this->mailer->send($email);
         }
     }
 
-    /**
-     * @param array $found
-     * @param array $report
-     *
-     * @return bool
-     */
-    protected function containsReport(array $found, array $report)
+    protected function containsReport(array $found, array $report): bool
     {
         $needle = substr($report[4], 0, 50);
-        foreach($found as $p) {
+        foreach ($found as $p) {
             if (substr($p[4], 0, 50) === $needle) {
                 return true;
             }

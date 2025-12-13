@@ -19,60 +19,23 @@ class DiscordService
 {
     use LoggerAwareTrait;
 
-    const API_BASE_URL = 'https://discord.com/api/v10';
-    const CDN_BASE_URL = 'https://cdn.discordapp.com';
-    const USER_AGENT   = 'nsfwdiscord.me (https://nsfwdiscord.me/, 1)';
-    const TIMEOUT      = 5.0;
-    const RETRY_LIMIT  = 3;
-    const CACHE_TIME   = 10;
+    public const API_BASE_URL = 'https://discord.com/api/v10';
+    public const CDN_BASE_URL = 'https://cdn.discordapp.com';
+    public const USER_AGENT   = 'nsfwdiscord.me (https://nsfwdiscord.me/, 1)';
+    public const TIMEOUT      = 5.0;
+    public const RETRY_LIMIT  = 3;
+    public const CACHE_TIME   = 10;
 
-    /**
-     * Tracks rate limit reset times per bucket
-     * @var array<string, float>
-     */
-    protected $rateLimitBuckets = [];
+    /** @var array<string, float> Tracks rate limit reset times per bucket */
+    protected array $rateLimitBuckets = [];
 
-    /**
-     * @var string
-     */
-    protected $clientID;
-
-    /**
-     * @var string
-     */
-    protected $clientSecret;
-
-    /**
-     * @var string
-     */
-    protected $botToken;
-
-    /**
-     * @var string
-     */
-    protected $defaultIcon;
-
-    /**
-     * @var AdapterInterface
-     */
-    protected $cache;
-
-    /**
-     * Constructor
-     *
-     * @param AdapterInterface $cache
-     * @param string $clientID
-     * @param string $clientSecret
-     * @param string $botToken
-     * @param string $defaultIcon
-     */
-    public function __construct(AdapterInterface $cache, $clientID, $clientSecret, $botToken, $defaultIcon)
-    {
-        $this->cache        = $cache;
-        $this->clientID     = $clientID;
-        $this->clientSecret = $clientSecret;
-        $this->botToken     = $botToken;
-        $this->defaultIcon  = $defaultIcon;
+    public function __construct(
+        protected AdapterInterface $cache,
+        protected string $clientID,
+        protected string $clientSecret,
+        protected string $botToken,
+        protected string $defaultIcon
+    ) {
     }
 
     /**
@@ -82,9 +45,9 @@ class DiscordService
      * @throws GuzzleException
      * @throws DiscordRateLimitException
      */
-    public function fetchWidget($serverID)
+    public function fetchWidget(int|string $serverID): array
     {
-        return $this->doRequest('GET', "guilds/${serverID}/widget.json");
+        return $this->doRequest('GET', "guilds/{$serverID}/widget.json");
     }
 
     /**
@@ -94,9 +57,9 @@ class DiscordService
      * @throws GuzzleException
      * @throws DiscordRateLimitException
      */
-    public function fetchUser($userID)
+    public function fetchUser(string|int $userID): array
     {
-        return $this->doRequest('GET', "users/${userID}", null, true);
+        return $this->doRequest('GET', "users/{$userID}", null, true);
     }
 
     /**
@@ -106,9 +69,9 @@ class DiscordService
      * @throws GuzzleException
      * @throws DiscordRateLimitException
      */
-    public function fetchGuild($serverID)
+    public function fetchGuild(string $serverID): array
     {
-        return $this->doRequest('GET', "guilds/${serverID}", null, true);
+        return $this->doRequest('GET', "guilds/{$serverID}", null, true);
     }
 
     /**
@@ -118,7 +81,7 @@ class DiscordService
      * @throws GuzzleException
      * @throws DiscordRateLimitException
      */
-    public function fetchMeGuilds(AccessToken $token)
+    public function fetchMeGuilds(AccessToken $token): array
     {
         return $this->doRequest('GET', 'users/@me/guilds', null, $token);
     }
@@ -130,9 +93,9 @@ class DiscordService
      * @throws GuzzleException
      * @throws DiscordRateLimitException
      */
-    public function fetchGuildChannels($serverID)
+    public function fetchGuildChannels(string $serverID): array
     {
-        return $this->doRequest('GET', "guilds/${serverID}/channels", null, true);
+        return $this->doRequest('GET', "guilds/{$serverID}/channels", null, true);
     }
 
     /**
@@ -142,9 +105,9 @@ class DiscordService
      * @throws GuzzleException
      * @throws DiscordRateLimitException
      */
-    public function fetchGuildMembers($serverID)
+    public function fetchGuildMembers(string $serverID): array
     {
-        return $this->doRequest('GET', "guilds/${serverID}/members", null, true);
+        return $this->doRequest('GET', "guilds/{$serverID}/members", null, true);
     }
 
     /**
@@ -154,23 +117,23 @@ class DiscordService
      * @throws Exception
      * @throws GuzzleException
      */
-    public function fetchOnlineCount($serverID)
+    public function fetchOnlineCount(string $serverID): int
     {
         try {
             $widget = $this->fetchWidget($serverID);
             if (is_array($widget) && isset($widget['members'])) {
                 return count($widget['members']);
             }
-        } catch (Exception $e) {}
+        } catch (Exception) {}
 
         try {
             $members = $this->fetchGuildMembers($serverID);
             if (is_array($members)) {
                 return count($members);
             }
-        } catch (Exception $e) {}
+        } catch (Exception) {}
 
-        throw new Exception("Unable to fetch online count for ${serverID}.");
+        throw new Exception("Unable to fetch online count for {$serverID}.");
     }
 
     /**
@@ -180,14 +143,14 @@ class DiscordService
      * @throws Exception
      * @throws GuzzleException
      */
-    public function createBotInviteURL($channelID)
+    public function createBotInviteURL(string $channelID): string
     {
-        $invite = $this->doRequest('POST', "channels/${channelID}/invites", [], true);
+        $invite = $this->doRequest('POST', "channels/{$channelID}/invites", [], true);
         if (!$invite || !isset($invite['code'])) {
             throw new Exception('Unable to generate invite.');
         }
 
-        return "https://discord.gg/${invite['code']}";
+        return "https://discord.gg/{$invite['code']}";
     }
 
     /**
@@ -197,7 +160,7 @@ class DiscordService
      * @throws Exception
      * @throws GuzzleException
      */
-    public function createWidgetInviteURL($serverID)
+    public function createWidgetInviteURL(string $serverID): string
     {
         $widget = $this->fetchWidget($serverID);
         if (!$widget || !isset($widget['instant_invite'])) {
@@ -214,7 +177,7 @@ class DiscordService
      *
      * @return string
      */
-    public function writeGuildIcon($serverID, $iconHash, $ext = 'png')
+    public function writeGuildIcon(string $serverID, ?string $iconHash, string $ext = 'png'): string
     {
         if (!$iconHash) {
             $tmp = tempnam(sys_get_temp_dir(), 'icon_');
@@ -247,22 +210,22 @@ class DiscordService
      *
      * @return array
      */
-    public function extractUsernameAndDiscriminator($username)
+    public function extractUsernameAndDiscriminator(string $username): array
     {
-        if (preg_match('/^([^@#:]{2,32})#([\d]{4})$/i', $username, $matches) && strpos($username, '```') === false) {
-            $username      = $matches[1];
+        if (preg_match('/^([^@#:]{2,32})#([\d]{4})$/i', $username, $matches) && !str_contains($username, '```')) {
+            $extractedUsername = $matches[1];
             $discriminator = (int)$matches[2];
-            if (in_array(strtolower($username), ['discordtag', 'everyone', 'here'])) {
+            if (in_array(strtolower($extractedUsername), ['discordtag', 'everyone', 'here'])) {
                 throw new InvalidArgumentException(
-                    "Invalid username ${username}."
+                    "Invalid username {$extractedUsername}."
                 );
             }
 
-            return [$username, $discriminator];
+            return [$extractedUsername, $discriminator];
         }
 
         throw new InvalidArgumentException(
-            "Invalid username ${username}."
+            "Invalid username {$username}."
         );
     }
 

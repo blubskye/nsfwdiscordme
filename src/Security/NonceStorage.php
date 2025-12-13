@@ -1,64 +1,36 @@
 <?php
 namespace App\Security;
 
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
-/**
- * Class NonceComponent
- */
 class NonceStorage implements NonceStorageInterface
 {
-    /**
-     * @var SessionInterface
-     */
-    protected $session;
-
-    /**
-     * Constructor
-     *
-     * @param SessionInterface $session
-     */
-    public function __construct(SessionInterface $session)
-    {
-        $this->session = $session;
+    public function __construct(
+        private readonly RequestStack $requestStack
+    ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function get($key)
+    public function get(string $key): mixed
     {
-        return $this->session->get($this->getSessionKey($key));
+        return $this->requestStack->getSession()->get($this->getSessionKey($key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function set($key, $value)
+    public function set(string $key, mixed $value): void
     {
-        $this->session->set($this->getSessionKey($key), $value);
+        $this->requestStack->getSession()->set($this->getSessionKey($key), $value);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function remove($key)
+    public function remove(string $key): mixed
     {
-        return $this->session->remove($this->getSessionKey($key));
+        return $this->requestStack->getSession()->remove($this->getSessionKey($key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function has($key)
+    public function has(string $key): bool
     {
-        return $this->session->has($this->getSessionKey($key));
+        return $this->requestStack->getSession()->has($this->getSessionKey($key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function valid($key, $value, $remove = true)
+    public function valid(string $key, mixed $value, bool $remove = true): bool
     {
         $valid = $this->get($key) === $value;
         if ($remove) {
@@ -68,13 +40,8 @@ class NonceStorage implements NonceStorageInterface
         return $valid;
     }
 
-    /**
-     * @param string $key
-     *
-     * @return string
-     */
-    private function getSessionKey($key)
+    private function getSessionKey(string $key): string
     {
-        return "nonce.${key}";
+        return "nonce.{$key}";
     }
 }
