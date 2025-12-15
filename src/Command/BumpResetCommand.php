@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Command;
 
 use App\Entity\Server;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,6 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class BumpResetCommand extends Command
 {
+    private const BATCH_SIZE = 500;
+
     public function __construct(
         private readonly EntityManagerInterface $em
     ) {
@@ -29,13 +32,30 @@ class BumpResetCommand extends Command
             return Command::SUCCESS;
         }
 
-        foreach ($this->em->getRepository(Server::class)->findAll() as $server) {
-            $server->setBumpPoints(0);
-            $output->writeln('Resetting ' . $server->getDiscordID());
-        }
+        $serverRepo = $this->em->getRepository(Server::class);
+        $processed = 0;
+        $offset = 0;
 
-        $this->em->flush();
-        $output->writeln('Done!');
+        // Batch process to avoid memory exhaustion on large datasets
+        do {
+            $servers = $serverRepo->createQueryBuilder('s')
+                ->setFirstResult($offset)
+                ->setMaxResults(self::BATCH_SIZE)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($servers as $server) {
+                $server->setBumpPoints(0);
+                $output->writeln('Resetting ' . $server->getDiscordID());
+                $processed++;
+            }
+
+            $this->em->flush();
+            $this->em->clear(Server::class);
+            $offset += self::BATCH_SIZE;
+        } while (count($servers) === self::BATCH_SIZE);
+
+        $output->writeln(sprintf('Done! Reset %d servers.', $processed));
 
         return Command::SUCCESS;
     }

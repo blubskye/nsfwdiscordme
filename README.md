@@ -198,6 +198,96 @@ If you discover a security vulnerability, please report it responsibly:
 3. Include detailed steps to reproduce the vulnerability
 4. Allow reasonable time for a fix before public disclosure
 
+## Performance Optimizations
+
+This project includes several performance optimizations for production environments.
+
+### Webpack Production Build
+
+Assets are automatically optimized in production mode:
+
+```bash
+# Development build
+npm run dev
+
+# Production build (minified, no source maps, content hashing)
+NODE_ENV=production npm run build
+```
+
+Production builds include:
+- JavaScript minification via TerserPlugin (console.log stripped)
+- CSS minification via CssMinimizerPlugin
+- Content hashing for cache busting
+- Code splitting (vendor chunks separated)
+- No source maps in production
+
+### Database Query Optimizations
+
+**N+1 Query Prevention:**
+- `ProfileController` - Batch fetches last bump events for all servers in a single query
+- `ServerRepository::findByTeamMemberUser()` - Eager loads categories and tags
+
+**O(1) Lookups:**
+- Duplicate detection in `ServerController` uses `isset()` with associative arrays instead of `in_array()` for O(1) vs O(n) performance
+
+### Batch Processing for CLI Commands
+
+Commands that process large datasets use batch processing to prevent memory exhaustion:
+
+| Command | Batch Size | Description |
+|---------|------------|-------------|
+| `app:bumps:reset` | 500 | Resets bump points on 1st/15th |
+| `app:server:online` | 100 | Updates online member counts |
+| `app:payments:process-client-failures` | 50 | Retries failed webhooks |
+
+Each batch flushes to the database and clears the entity manager to free memory.
+
+### Redis Caching
+
+The project uses Redis extensively:
+
+```env
+# .env.local
+REDIS_URL=redis://localhost:6379
+```
+
+Cache pools configured:
+- **Sessions** - Redis-backed session storage
+- **Application Cache** - General purpose caching
+- **Doctrine Second-Level Cache** - Entity caching (1-hour TTL)
+- **Query Result Cache** - Query results (30-minute TTL)
+
+### PHP OPcache & JIT
+
+For optimal performance, configure PHP OPcache in production:
+
+```ini
+; php.ini
+opcache.enable=1
+opcache.memory_consumption=256
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=0
+
+; PHP 8.4+ JIT
+opcache.jit=tracing
+opcache.jit_buffer_size=100M
+```
+
+### Strict Types
+
+All core files use `declare(strict_types=1)` for:
+- Better JIT optimization
+- Type safety
+- Earlier error detection
+
+### NPM Dependencies for Optimization
+
+Install the required optimization packages:
+
+```bash
+npm install --save-dev terser-webpack-plugin css-minimizer-webpack-plugin
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

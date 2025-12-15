@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Server;
@@ -9,74 +11,54 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Class GuildRepository
+ * @extends ServiceEntityRepository<Server>
  */
 class ServerRepository extends ServiceEntityRepository
 {
-    /**
-     * Constructor
-     *
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Server::class);
     }
 
-    /**
-     * @param int $id
-     *
-     * @return object|Server
-     */
-    public function findByID($id)
+    public function findByID(int|string $id): ?Server
     {
         return $this->findOneBy(['id' => $id]);
     }
 
-    /**
-     * @param string $discordID
-     *
-     * @return object|Server
-     */
-    public function findByDiscordID($discordID)
+    public function findByDiscordID(string $discordID): ?Server
     {
         return $this->findOneBy(['discordID' => $discordID]);
     }
 
-    /**
-     * @param string $slug
-     *
-     * @return object|Server
-     */
-    public function findBySlug($slug)
+    public function findBySlug(string $slug): ?Server
     {
         return $this->findOneBy(['slug' => $slug]);
     }
 
     /**
-     * @param User $user
-     *
-     * @return Server[]
+     * @return array<Server>
      */
-    public function findByUser(User $user)
+    public function findByUser(User $user): array
     {
         return $this->findBy(['user' => $user, 'isEnabled' => true]);
     }
 
     /**
-     * Returns servers for which the given user is a team member
+     * Returns servers for which the given user is a team member.
+     * Eager loads categories and tags to avoid N+1 queries.
      *
-     * @param User $user
-     *
-     * @return Server[]
+     * @return array<Server>
      */
-    public function findByTeamMemberUser(User $user)
+    public function findByTeamMemberUser(User $user): array
     {
         return $this->createQueryBuilder('s')
             ->leftJoin(ServerTeamMember::class, 't', Join::WITH, 't.server = s')
+            ->leftJoin('s.categories', 'c')
+            ->leftJoin('s.tags', 'tags')
+            ->addSelect('c', 'tags')
             ->where('t.user = :user')
-            ->setParameter(':user', $user)
+            ->setParameter('user', $user)
             ->getQuery()
-            ->execute();
+            ->getResult();
     }
 }
