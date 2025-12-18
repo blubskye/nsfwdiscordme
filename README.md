@@ -5,7 +5,8 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![PHP Version](https://img.shields.io/badge/PHP-8.5%2B-777BB4.svg)](https://php.net)
 [![Symfony](https://img.shields.io/badge/Symfony-8.0-000000.svg)](https://symfony.com)
-[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933.svg)](https://nodejs.org)
+[![Node.js](https://img.shields.io/badge/Node.js-24%2B-339933.svg)](https://nodejs.org)
+[![Redis](https://img.shields.io/badge/Redis-8.4%2B-DC382D.svg)](https://redis.io)
 [![Discord API](https://img.shields.io/badge/Discord%20API-v10-5865F2.svg)](https://discord.com/developers/docs)
 
 A Discord server directory and listing platform built with Symfony. Allows server owners to list, manage, and promote their Discord communities.
@@ -35,19 +36,19 @@ A Discord server directory and listing platform built with Symfony. Allows serve
 |-----------|------------|
 | Backend | PHP 8.5+, Symfony 8.0 |
 | Database | MariaDB 10.6+ / MySQL 8.0+ |
-| Cache | Redis 7+ |
+| Cache | Redis 8.4+ (async I/O) |
 | Search | Elasticsearch 8+ |
-| Frontend | Webpack 5, Bootstrap 5, ES6+ |
+| Frontend | Node.js 24+, Webpack 5, Bootstrap 5, ES6+ |
 | Discord | Discord API v10, DiscordPHP |
 
 ## Requirements
 
 - PHP 8.5 or higher
 - MariaDB 10.6+ or MySQL 8.0+
-- Redis 7+
+- Redis 8.4+ (for async I/O threading)
 - Elasticsearch 8+
 - Nginx 1.18+
-- Node.js 22+
+- Node.js 24+ with npm 11+
 - Composer 2.x
 
 ## Installation
@@ -202,24 +203,38 @@ If you discover a security vulnerability, please report it responsibly:
 
 This project includes several performance optimizations for production environments.
 
-### Webpack Production Build
+### Node.js 24 & Webpack Optimizations
 
-Assets are automatically optimized in production mode:
+The build system requires Node.js 24+ for optimal performance:
 
 ```bash
+# Check Node.js version
+node --version  # Should be v24.x.x
+
 # Development build
 npm run dev
 
 # Production build (minified, no source maps, content hashing)
 NODE_ENV=production npm run build
+
+# Analyze bundle size
+npm run analyze
 ```
 
-Production builds include:
-- JavaScript minification via TerserPlugin (console.log stripped)
-- CSS minification via CssMinimizerPlugin
+**Node.js 24 Features Used:**
+- V8 13.6 engine with 15-30% performance improvements
+- Enhanced async/await performance
+- npm 11 with faster dependency resolution
+- Native ESM improvements
+
+**Webpack Build Optimizations:**
+- Parallel minification using all CPU cores
+- LightningCSS for faster CSS minification
+- Filesystem caching for faster rebuilds
+- ECMAScript 2024 output targeting modern browsers
+- Tree shaking with `usedExports` and `sideEffects`
+- Code splitting (vendor, bootstrap, common chunks)
 - Content hashing for cache busting
-- Code splitting (vendor chunks separated)
-- No source maps in production
 
 ### Database Query Optimizations
 
@@ -242,19 +257,37 @@ Commands that process large datasets use batch processing to prevent memory exha
 
 Each batch flushes to the database and clears the entity manager to free memory.
 
-### Redis Caching
+### Redis 8.4+ with Async I/O
 
-The project uses Redis extensively:
+The project uses Redis 8.4+ with async I/O threading for improved performance:
 
 ```env
 # .env.local
 REDIS_URL=redis://localhost:6379
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
-Cache pools configured:
-- **Sessions** - Redis-backed session storage
+**Redis Server Configuration** (`config/redis/redis-8.4.conf`):
+```ini
+# Enable async I/O threads (set to CPU core count, max 8)
+io-threads 8
+io-threads-do-reads yes
+
+# Enable lookahead prefetching
+# lookahead 16
+```
+
+**Performance Improvements:**
+- 37-112% throughput improvement with async I/O threads
+- Persistent connections reduce connection overhead
+- Pipelining support in `Redis8Adapter` for batch operations
+- Lookahead prefetching parses commands in advance
+
+**Cache Pools:**
+- **Sessions** - Redis-backed session storage (database 0)
 - **Application Cache** - General purpose caching
-- **Doctrine Second-Level Cache** - Entity caching (1-hour TTL)
+- **Doctrine Second-Level Cache** - Entity caching (1-hour TTL, database 2)
 - **Query Result Cache** - Query results (30-minute TTL)
 
 ### PHP OPcache & JIT
@@ -285,8 +318,17 @@ All core files use `declare(strict_types=1)` for:
 Install the required optimization packages:
 
 ```bash
-npm install --save-dev terser-webpack-plugin css-minimizer-webpack-plugin
+npm install --save-dev terser-webpack-plugin css-minimizer-webpack-plugin lightningcss webpack-bundle-analyzer
 ```
+
+### Infrastructure Summary
+
+| Component | Version | Key Feature |
+|-----------|---------|-------------|
+| Node.js | 24+ | V8 13.6 with 15-30% perf gains |
+| Redis | 8.4+ | Async I/O threads (37-112% throughput) |
+| PHP | 8.5+ | JIT compilation |
+| Webpack | 5.97+ | Parallel processing |
 
 ## Contributing
 

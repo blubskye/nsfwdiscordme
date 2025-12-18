@@ -21,15 +21,29 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    # Redis 8.4+ optimized connection with persistent connections
+    # Enable async I/O on server: io-threads 8
     Redis:
         class: Redis
         calls:
-            - method: connect
+            - method: pconnect
               arguments:
                   - '%env(REDIS_HOST)%'
                   - '%env(int:REDIS_PORT)%'
+                  - 2.0  # timeout
+                  - 'persistent_main'  # persistent ID
+
+    # Redis 8.4 adapter with pipelining support
+    App\Storage\Redis\Redis8Adapter:
+        arguments:
+            $host: '%env(REDIS_HOST)%'
+            $port: '%env(int:REDIS_PORT)%'
+            $database: 0
+            $timeout: 2.0
+            $pipelineThreshold: 3
 
     App\Storage\Sessions\RedisSessionHandler:
+        factory: ['App\Storage\Sessions\RedisSessionHandler', 'create']
         arguments:
             - '@Redis'
             - { prefix: 'session_', database: 0 }
