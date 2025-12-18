@@ -5,7 +5,8 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![PHP Version](https://img.shields.io/badge/PHP-8.5%2B-777BB4.svg)](https://php.net)
 [![Symfony](https://img.shields.io/badge/Symfony-8.0-000000.svg)](https://symfony.com)
-[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933.svg)](https://nodejs.org)
+[![Node.js](https://img.shields.io/badge/Node.js-24%2B-339933.svg)](https://nodejs.org)
+[![Redis](https://img.shields.io/badge/Redis-8.4%2B-DC382D.svg)](https://redis.io)
 [![Discord API](https://img.shields.io/badge/Discord%20API-v10-5865F2.svg)](https://discord.com/developers/docs)
 
 A Discord server directory and listing platform built with Symfony. Allows server owners to list, manage, and promote their Discord communities.
@@ -35,20 +36,20 @@ A Discord server directory and listing platform built with Symfony. Allows serve
 |-----------|------------|
 | Backend | PHP 8.5+, Symfony 8.0 |
 | Database | MariaDB 10.6+ / MySQL 8.0+ |
-| Cache | Redis 7+ |
+| Cache | Redis 8.4+ (async I/O) |
 | Search | Elasticsearch 8+ |
-| Frontend | Webpack 5, Bootstrap 5, ES6+ |
+| Frontend | Node.js 24+, Webpack 5, Bootstrap 5, ES6+ |
 | Discord | Discord API v10, DiscordPHP |
 
 ## Requirements
 
 - PHP 8.5 or higher
 - MariaDB 10.6+ or MySQL 8.0+
-- Redis 7+
+- Redis 8.4+ (for async I/O threading)
 - Elasticsearch 8+
 - Nginx 1.18+
-- Node.js 22+
-- Composer 2.x
+- Node.js 24+ with npm 11+
+- Composer 2.9.2+ (for security blocking)
 
 ## Installation
 
@@ -197,6 +198,174 @@ If you discover a security vulnerability, please report it responsibly:
 2. Email security concerns to the repository maintainers
 3. Include detailed steps to reproduce the vulnerability
 4. Allow reasonable time for a fix before public disclosure
+
+## Performance Optimizations
+
+This project includes several performance optimizations for production environments.
+
+### Node.js 24 & Webpack Optimizations
+
+The build system requires Node.js 24+ for optimal performance:
+
+```bash
+# Check Node.js version
+node --version  # Should be v24.x.x
+
+# Development build
+npm run dev
+
+# Production build (minified, no source maps, content hashing)
+NODE_ENV=production npm run build
+
+# Analyze bundle size
+npm run analyze
+```
+
+**Node.js 24 Features Used:**
+- V8 13.6 engine with 15-30% performance improvements
+- Enhanced async/await performance
+- npm 11 with faster dependency resolution
+- Native ESM improvements
+
+**Webpack Build Optimizations:**
+- Parallel minification using all CPU cores
+- LightningCSS for faster CSS minification
+- Filesystem caching for faster rebuilds
+- ECMAScript 2024 output targeting modern browsers
+- Tree shaking with `usedExports` and `sideEffects`
+- Code splitting (vendor, bootstrap, common chunks)
+- Content hashing for cache busting
+
+### Database Query Optimizations
+
+**N+1 Query Prevention:**
+- `ProfileController` - Batch fetches last bump events for all servers in a single query
+- `ServerRepository::findByTeamMemberUser()` - Eager loads categories and tags
+
+**O(1) Lookups:**
+- Duplicate detection in `ServerController` uses `isset()` with associative arrays instead of `in_array()` for O(1) vs O(n) performance
+
+### Batch Processing for CLI Commands
+
+Commands that process large datasets use batch processing to prevent memory exhaustion:
+
+| Command | Batch Size | Description |
+|---------|------------|-------------|
+| `app:bumps:reset` | 500 | Resets bump points on 1st/15th |
+| `app:server:online` | 100 | Updates online member counts |
+| `app:payments:process-client-failures` | 50 | Retries failed webhooks |
+
+Each batch flushes to the database and clears the entity manager to free memory.
+
+### Redis 8.4+ with Async I/O
+
+The project uses Redis 8.4+ with async I/O threading for improved performance:
+
+```env
+# .env.local
+REDIS_URL=redis://localhost:6379
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+**Redis Server Configuration** (`config/redis/redis-8.4.conf`):
+```ini
+# Enable async I/O threads (set to CPU core count, max 8)
+io-threads 8
+io-threads-do-reads yes
+
+# Enable lookahead prefetching
+# lookahead 16
+```
+
+**Performance Improvements:**
+- 37-112% throughput improvement with async I/O threads
+- Persistent connections reduce connection overhead
+- Pipelining support in `Redis8Adapter` for batch operations
+- Lookahead prefetching parses commands in advance
+
+**Cache Pools:**
+- **Sessions** - Redis-backed session storage (database 0)
+- **Application Cache** - General purpose caching
+- **Doctrine Second-Level Cache** - Entity caching (1-hour TTL, database 2)
+- **Query Result Cache** - Query results (30-minute TTL)
+
+### PHP OPcache & JIT
+
+For optimal performance, configure PHP OPcache in production:
+
+```ini
+; php.ini
+opcache.enable=1
+opcache.memory_consumption=256
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=0
+
+; PHP 8.4+ JIT
+opcache.jit=tracing
+opcache.jit_buffer_size=100M
+```
+
+### Strict Types
+
+All core files use `declare(strict_types=1)` for:
+- Better JIT optimization
+- Type safety
+- Earlier error detection
+
+### NPM Dependencies for Optimization
+
+Install the required optimization packages:
+
+```bash
+npm install --save-dev terser-webpack-plugin css-minimizer-webpack-plugin lightningcss webpack-bundle-analyzer
+```
+
+### Composer 2.9.2+ Optimizations
+
+The project uses Composer 2.9.2+ with security and performance enhancements:
+
+```bash
+# Update Composer to 2.9.2+
+composer self-update
+
+# Run security audit
+composer audit
+
+# Update with minimal changes (safer)
+composer update --minimal-changes
+
+# Update with patch-only restrictions
+composer update --patch-only
+```
+
+**Security Features (Composer 2.9+):**
+- `audit.block-insecure: true` - Blocks updates to vulnerable packages
+- `audit.abandoned: report` - Reports abandoned packages
+- Automatic security advisory checking during updates
+
+**Performance Optimizations:**
+- `optimize-autoloader: true` - Generates optimized class maps
+- `classmap-authoritative: true` - Only loads from classmap (no filesystem checks)
+- `apcu-autoloader: true` - Uses APCu for autoloader caching
+- `platform-check: true` - Validates PHP version and extensions
+
+**Useful Scripts:**
+```bash
+composer audit          # Run security audit on lock file
+composer test           # Run PHPUnit tests
+composer cs-fix         # Run PHP-CS-Fixer
+```
+
+### Infrastructure Summary
+
+| Component | Version | Key Feature |
+|-----------|---------|-------------|
+| Node.js | 24+ | V8 13.6 with 15-30% perf gains |
+| Redis | 8.4+ | Async I/O threads (37-112% throughput) |
+| PHP | 8.5+ | JIT compilation |
+| Composer | 2.9.2+ | Security blocking, optimized autoloader |
+| Webpack | 5.97+ | Parallel processing |
 
 ## Contributing
 

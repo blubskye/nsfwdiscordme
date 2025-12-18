@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\BannedServer;
@@ -355,26 +357,34 @@ class ServerController extends Controller
             return false;
         }
 
+        // Use isset() for O(1) lookup instead of in_array() O(n)
         $foundCats = [];
         foreach ($server->getCategories() as $category) {
-            if ($category->getId() && in_array($category->getId(), $foundCats)) {
+            $catId = $category->getId();
+            if ($catId && isset($foundCats[$catId])) {
                 $form
                     ->get('category2')
                     ->addError(new FormError('Categories must be unique.'));
                 return false;
             }
-            $foundCats[] = $category->getId();
+            if ($catId) {
+                $foundCats[$catId] = true;
+            }
         }
 
+        // Use isset() for O(1) lookup instead of in_array() O(n)
         $foundTags = [];
         foreach ($server->getTags() as $tag) {
-            if ($tag->getId() && in_array($tag->getId(), $foundTags)) {
+            $tagId = $tag->getId();
+            if ($tagId && isset($foundTags[$tagId])) {
                 $form
                     ->get('tags')
                     ->addError(new FormError('Tags must be unique.'));
                 return false;
             }
-            $foundTags[] = $tag->getId();
+            if ($tagId) {
+                $foundTags[$tagId] = true;
+            }
         }
 
         $bannedWordRepo = $this->em->getRepository(BannedWord::class);

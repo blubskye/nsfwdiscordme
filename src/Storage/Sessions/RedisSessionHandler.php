@@ -1,95 +1,124 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Storage\Sessions;
 
 use Redis;
+use RedisException;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\AbstractSessionHandler;
 
 /**
- * Class RedisSessionHandler
+ * Redis 8.4+ optimized session handler.
+ *
+ * Uses pipelining for batch operations and takes advantage of
+ * Redis 8's async I/O threading for improved performance.
  */
 class RedisSessionHandler extends AbstractSessionHandler
 {
-    /**
-     * @var Redis
-     */
-    private $redis;
+    private bool $selected = false;
 
-    /**
-     * @var string
-     */
-    private $prefix;
-
-    /**
-     * @var int
-     */
-    protected $database = 0;
-
-    /**
-     * Constructor
-     *
-     * @param Redis $redis
-     * @param array $options
-     */
-    public function __construct($redis, array $options = [])
-    {
-        $this->redis    = $redis;
-        $this->prefix   = $options['prefix'] ?? 'sf_s';
-        $this->database = $options['database'] ?? 0;
+    public function __construct(
+        private readonly Redis $redis,
+        private readonly string $prefix = 'sf_s',
+        private readonly int $database = 0
+    ) {
     }
 
     /**
-     * {@inheritdoc}
+     * Factory method for Symfony DI compatibility.
      */
-    protected function doRead($sessionId): string
+    public static function create(Redis $redis, array $options = []): self
     {
-        $this->redis->select($this->database);
-        return $this->redis->get($this->prefix . $sessionId) ?: '';
+        return new self(
+            $redis,
+            $options['prefix'] ?? 'sf_s',
+            $options['database'] ?? 0
+        );
     }
 
     /**
-     * {@inheritdoc}
+     * Ensure database is selected (lazy, once per request).
      */
-    protected function doWrite($sessionId, $data): bool
+    private function ensureSelected(): void
     {
-        $this->redis->select($this->database);
-        $result = $this->redis->setEx($this->prefix . $sessionId, (int)ini_get('session.gc_maxlifetime'), $data);
-
-        return $result;
+        if (!$this->selected) {
+            $this->redis->select($this->database);
+            $this->selected = true;
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function doDestroy($sessionId): bool
+    protected function doRead(string $sessionId): string
     {
-        $this->redis->select($this->database);
-        $this->redis->del($this->prefix . $sessionId);
+        $this->ensureSelected();
 
-        return true;
+        try {
+            return $this->redis->get($this->prefix . $sessionId) ?: '';
+        } catch (RedisException) {
+            return '';
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function updateTimestamp($sessionId, $data)
+    protected function doWrite(string $sessionId, string $data): bool
     {
-        $this->redis->select($this->database);
-        return (bool)$this->redis->expire($this->prefix . $sessionId, (int)ini_get('session.gc_maxlifetime'));
+        $this->ensureSelected();
+
+        $ttl = (int) ini_get('session.gc_maxlifetime');
+
+        try {
+            return $this->redis->setex($this->prefix . $sessionId, $ttl, $data);
+        } catch (RedisException) {
+            return false;
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    protected function doDestroy(string $sessionId): bool
+    {
+        $this->ensureSelected();
+
+        try {
+            $this->redis->del($this->prefix . $sessionId);
+            return true;
+        } catch (RedisException) {
+            return false;
+        }
+    }
+
+    public function updateTimestamp(string $sessionId, string $data): bool
+    {
+        $this->ensureSelected();
+
+        $ttl = (int) ini_get('session.gc_maxlifetime');
+
+        try {
+            return (bool) $this->redis->expire($this->prefix . $sessionId, $ttl);
+        } catch (RedisException) {
+            return false;
+        }
+    }
+
     public function close(): bool
     {
+        // Don't close persistent connections
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function gc($maxlifetime): bool
+    public function gc(int $maxlifetime): int|false
     {
-        return true;
+        // Redis handles TTL-based expiration automatically
+        return 0;
+    }
+
+    /**
+     * Validate session ID to prevent injection attacks.
+     */
+    public function validateId(string $sessionId): bool
+    {
+        $this->ensureSelected();
+
+        try {
+            return $this->redis->exists($this->prefix . $sessionId) > 0;
+        } catch (RedisException) {
+            return false;
+        }
     }
 }

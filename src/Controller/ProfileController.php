@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Purchase;
@@ -12,42 +14,41 @@ use Symfony\Component\Routing\Attribute\Route;
 class ProfileController extends Controller
 {
     /**
-     * @return Response
      * @throws Exception
      */
     #[Route('/profile', name: 'index', options: ['expose' => true])]
     public function indexAction(): Response
     {
-        /** @var Server $premiumServer */
         $eventRepo = $this->em->getRepository(ServerEvent::class);
-        $servers   = $this->em->getRepository(Server::class)
-            ->findByTeamMemberUser($this->getUser());
+        $serverRepo = $this->em->getRepository(Server::class);
+
+        $servers = $serverRepo->findByTeamMemberUser($this->getUser());
+
+        // Batch fetch last bump events for all servers to avoid N+1 queries
+        $serverIds = array_map(fn($s) => $s->getId(), $servers);
+        $lastBumpEvents = $serverIds ? $eventRepo->findLastBumpEventsForServers($serverIds) : [];
 
         $premiumServer = null;
         $premiumStatus = Server::STATUS_STR_STANDARD;
-        foreach($servers as $server) {
-            // Set the server with the greatest premium status, which is used
-            // to display the "Bump all servers" button if applicable.
-            if (!$premiumServer) {
-                $premiumServer = $server;
-            } else if ($server->getPremiumStatus() > $premiumServer->getPremiumStatus()) {
+        $now = time();
+
+        foreach ($servers as $server) {
+            // Set the server with the greatest premium status
+            if (!$premiumServer || $server->getPremiumStatus() > $premiumServer->getPremiumStatus()) {
                 $premiumServer = $server;
             }
 
-            // The countdown on the profile page needs to know when the server
-            // can be bumped again, which is given in seconds.
+            // Calculate next bump time
             $dateBumped = $server->getDateBumped();
             if (!$dateBumped) {
                 $server->setNextBumpSeconds(0);
             } else {
                 $window = $dateBumped->getTimestamp() + Server::BUMP_PERIOD_SECONDS;
-                $server->setNextBumpSeconds($window - time());
+                $server->setNextBumpSeconds($window - $now);
             }
 
-            // Needed to display the last time the server was bump and by who.
-            $server->setLastBumpEvent(
-                $eventRepo->findLastByEvent(ServerEvent::TYPE_BUMP)
-            );
+            // Use pre-fetched bump events instead of N+1 query
+            $server->setLastBumpEvent($lastBumpEvents[$server->getId()] ?? null);
         }
 
         if ($premiumServer) {

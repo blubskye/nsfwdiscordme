@@ -1,6 +1,8 @@
 {
     "type": "project",
     "license": "AGPL-3.0-or-later",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
     "require": {
         "php": "^8.5",
         "ext-ctype": "*",
@@ -51,7 +53,16 @@
         "preferred-install": {
             "*": "dist"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "classmap-authoritative": true,
+        "apcu-autoloader": true,
+        "platform-check": true,
+        "audit": {
+            "abandoned": "report",
+            "block-insecure": true,
+            "block-abandoned": false
+        }
     },
     "autoload": {
         "psr-4": {
@@ -73,7 +84,10 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "audit": "composer audit --locked",
+        "test": "phpunit",
+        "cs-fix": "php-cs-fixer fix"
     },
     "conflict": {
         "symfony/symfony": "*"
