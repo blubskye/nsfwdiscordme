@@ -379,7 +379,44 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the **GNU Affero General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+### What This Means For You
+
+The AGPL-3.0 is a **copyleft license** that ensures this software remains free and open. Here's what you need to know:
+
+#### ✅ You CAN:
+- **Use** this software for any purpose (personal, commercial, whatever)
+- **Modify** the code to your heart's content
+- **Distribute** copies to others
+- **Run** it as a network service
+
+#### 📋 You MUST:
+- **Keep it open source** - ANY modifications you make must be released under AGPL-3.0
+- **Publish your source code** - Your modified source code must be made publicly available
+- **State changes** - Document what you've modified from the original
+- **Include license** - Keep the LICENSE file and copyright notices intact
+
+#### 🌐 The Network Clause (This is the important part!):
+Unlike regular GPL, **AGPL has a network provision**. This means:
+- If you modify this code **at all**, you must make your source public
+- Running a modified version as a network service (like a web app) requires source disclosure
+- This applies whether you "distribute" the code or not - network use counts!
+
+#### ❌ You CANNOT:
+- 🚫 Make it closed source or keep modifications private
+- 🚫 Remove the license or copyright notices
+- 🚫 Use a different license for modified versions
+- 🚫 Run modified code without publishing your source
+
+#### 💡 In Simple Terms:
+> If you use this code to create something, you must share it with everyone too. That's only fair, right?
+
+This ensures that improvements benefit the entire community, not just one person.
+
+See the [LICENSE](LICENSE) file for the full legal text.
+
+**Source Code:** https://github.com/blubskye/nsfwdiscordme
 
 [![AGPL v3](https://www.gnu.org/graphics/agplv3-with-text-162x68.png)](https://www.gnu.org/licenses/agpl-3.0)
 
